@@ -9,7 +9,7 @@ class Profile(models.Model):
 	)
 	date_of_birth = models.DateField()
 	bio = models.TextField(max_length=256, null=True)
-	avatar = models.ImageField()
+	avatar = models.ImageField(blank=True, null=True)
 
 	def __str__(self) -> str:
 		return self.user.username

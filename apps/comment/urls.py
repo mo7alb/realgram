@@ -7,5 +7,5 @@ router.register(r'comment', CommentViewSet)
 router.register(r'like-comment', LikeCommentViewSet)
 
 urlpatterns = [
-	path('', include(router.urls))
+	path('api/', include(router.urls))
 ]
