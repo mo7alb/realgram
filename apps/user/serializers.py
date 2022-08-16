@@ -1,3 +1,4 @@
+from dataclasses import fields
 from rest_framework import serializers
 from .models import Profile
 from django.contrib.auth.models import User
@@ -54,3 +55,14 @@ class ProfileSerializer(serializers.ModelSerializer):
 		profile.save()
 
 		return profile
+
+class AuthUserSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = User
+		fields = ['username', 'password']
+
+class AuthProfileSerializer(serializers.ModelSerializer):
+	user = AuthUserSerializer()
+	class Meta:
+		model = Profile
+		fields = ['user']
