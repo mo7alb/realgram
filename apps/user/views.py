@@ -9,6 +9,16 @@ from rest_framework import status
 from rest_framework.response import Response
 from .tasks import make_avatar
 
+def checkDataFields(request_data, required_fields):
+    ''' basic helper function to check if a list properties are passed along the request data '''
+    data_fields = list(request_data.keys())
+
+    for field in required_fields:
+        if field not in data_fields:
+            return False
+    
+    return True
+
 class NewProfileViewSet(viewsets.ViewSet):
     queryset = Profile.objects.all()
 
@@ -20,15 +30,13 @@ class NewProfileViewSet(viewsets.ViewSet):
     )
     def register(self, request):
         ''' allows new users to register '''
-        data_fields = list(request.data.keys())
-
-        if (
-            'username' not in data_fields or 
-            'email' not in data_fields or 
-            'first_name' not in data_fields or 
-            'last_name' not in data_fields or 
-            'password' not in data_fields
-        ):
+        if (checkDataFields(request_data=request.data, required_fields=[
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'password'
+        ])):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         user_data = {
@@ -59,8 +67,8 @@ class NewProfileViewSet(viewsets.ViewSet):
             # save user to db
             user.save()
 
-            bio = request.data['bio'] if 'bio' in data_fields else None
-            avatar = request.data['avatar'] if 'avatar' in data_fields else None
+            bio = request.data['bio'] if request.data['bio'] else None
+            avatar = request.data['avatar'] if request.data['avatar'] else None
 
             # create a profile for the user
             profile = Profile(
@@ -78,10 +86,7 @@ class NewProfileViewSet(viewsets.ViewSet):
             return Response({ 'profile': {
                 'id': profile.pk, 
                 'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
                 'email': user.email,
-                'bio': profile.bio,
             } }, status=status.HTTP_201_CREATED)
             
         except:
@@ -107,11 +112,11 @@ class AuthViewSet(viewsets.ViewSet):
         Authorization Token 123
         
         '''
-        data_fields = list(request.data.keys())
-
         if (
-            'username' not in data_fields or 
-            'password' not in data_fields 
+            checkDataFields(request_data=request.data, required_fields=[
+            'username',
+            'password',
+            ])
         ):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
