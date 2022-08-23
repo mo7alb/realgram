@@ -177,4 +177,6 @@ superuser.txt
 dump.rdb
 celery.pid
 
+avatars/
+
 # End of https://www.toptal.com/developers/gitignore/api/django

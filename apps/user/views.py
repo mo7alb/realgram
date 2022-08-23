@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
+from .tasks import make_avatar
 
 class NewProfileViewSet(viewsets.ViewSet):
     queryset = Profile.objects.all()
@@ -65,13 +66,24 @@ class NewProfileViewSet(viewsets.ViewSet):
             profile = Profile(
                 user=user,
                 bio=bio,
-                avatar=avatar,
+                avatar=avatar
             )
             # save profile to db
             profile.save()
-            
+
+            if avatar != None:
+                make_avatar.delay(profile.pk)
+
             # return 201 response as user and profile were successfully created
-            return Response(status=status.HTTP_201_CREATED)
+            return Response({ 'profile': {
+                'id': profile.pk, 
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'bio': profile.bio,
+            } }, status=status.HTTP_201_CREATED)
+            
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
