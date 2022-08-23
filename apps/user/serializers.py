@@ -28,16 +28,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 	def create(self, validated_data):
 		''' create a profile for the user '''
-		bio = validated_data.pop('bio')
-		avatar = validated_data.pop('avatar')
-		profile = Profile(
-			user=validated_data.pop('user'), 
-			bio=bio, 
-			avatar=avatar
-		)
-		profile.save()
-
-		return profile
+		print("profile serializer created")
+		return Profile.objects.create(**validated_data)
 
 
 class AuthUserSerializer(serializers.ModelSerializer):

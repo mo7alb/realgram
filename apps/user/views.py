@@ -1,16 +1,12 @@
 from .models import Profile
-from .serializers import ProfileSerializer, UserSerializer
 from django.contrib.auth import authenticate 
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
 from rest_framework import status
 from rest_framework.response import Response
-import json
 
 class NewProfileViewSet(viewsets.ViewSet):
     queryset = Profile.objects.all()
@@ -32,7 +28,7 @@ class NewProfileViewSet(viewsets.ViewSet):
             'last_name' not in data_fields or 
             'password' not in data_fields
         ):
-            return Response(status=HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         user_data = {
             'username': request.data['username'],
@@ -41,18 +37,43 @@ class NewProfileViewSet(viewsets.ViewSet):
             'last_name': request.data['last_name'],
             'password': request.data['password'],
         }
-        
-        # create a user
-        user = User(
-            username=user_data['username'],
-            email=user_data['email'],
-            first_name=user_data['first_name'],
-            last_name=user_data['last_name']
-        )
 
-        user.set_password(user_data['password'])
-        user.save()
-        return Response(status=status.HTTP_201_CREATED)
+        usernames = User.objects.filter(username=user_data['username'])
+        if len(usernames) > 0:
+            return Response({ 'error': 'username already exists' }, status=status.HTTP_400_BAD_REQUEST)
+        emails = User.objects.filter(email=user_data['email'])
+        if len(emails) > 0:
+            return Response({ 'error': 'email already exists' }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # create a user
+            user = User(
+                username=user_data['username'],
+                email=user_data['email'],
+                first_name=user_data['first_name'],
+                last_name=user_data['last_name']
+            )
+            # set user password 
+            user.set_password(user_data['password'])
+            # save user to db
+            user.save()
+
+            bio = request.data['bio'] if 'bio' in data_fields else None
+            avatar = request.data['avatar'] if 'avatar' in data_fields else None
+
+            # create a profile for the user
+            profile = Profile(
+                user=user,
+                bio=bio,
+                avatar=avatar,
+            )
+            # save profile to db
+            profile.save()
+            
+            # return 201 response as user and profile were successfully created
+            return Response(status=status.HTTP_201_CREATED)
+        except:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AuthViewSet(viewsets.ViewSet):
     queryset = Profile.objects.all()
@@ -80,7 +101,7 @@ class AuthViewSet(viewsets.ViewSet):
             'username' not in data_fields or 
             'password' not in data_fields 
         ):
-            return Response(status=HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         username = request.data['username']
         password = request.data['password']
@@ -90,12 +111,12 @@ class AuthViewSet(viewsets.ViewSet):
         if not user:
             return Response(
                 {'error': 'invalid credentials'}, 
-                status=HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         token, _ = Token.objects.get_or_create(user=user)
 
-        return Response({ 'token': token.key }, status=HTTP_200_OK)
+        return Response({ 'token': token.key }, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
