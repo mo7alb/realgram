@@ -1,18 +1,58 @@
 from .models import Profile
-from .serializers import ProfileSerializer
-from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny
+from .serializers import ProfileSerializer, UserSerializer
+from django.contrib.auth import authenticate 
+from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_200_OK
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
+from rest_framework import status
 from rest_framework.response import Response
+import json
 
-class NewProfile(generics.CreateAPIView):
-	queryset = Profile.objects.all()
-	serializer_class = ProfileSerializer
-	permission_classes = [AllowAny]
+class NewProfileViewSet(viewsets.ViewSet):
+    queryset = Profile.objects.all()
+
+    @action(
+        detail=False, 
+        methods=['post'], 
+        name='register users', 
+        permission_classes=[AllowAny]
+    )
+    def register(self, request):
+        ''' allows new users to register '''
+        data_fields = list(request.data.keys())
+
+        if (
+            'username' not in data_fields or 
+            'email' not in data_fields or 
+            'first_name' not in data_fields or 
+            'last_name' not in data_fields or 
+            'password' not in data_fields
+        ):
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        user_data = {
+            'username': request.data['username'],
+            'email': request.data['email'],
+            'first_name': request.data['first_name'],
+            'last_name': request.data['last_name'],
+            'password': request.data['password'],
+        }
+        
+        # create a user
+        user = User(
+            username=user_data['username'],
+            email=user_data['email'],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name']
+        )
+
+        user.set_password(user_data['password'])
+        user.save()
+        return Response(status=status.HTTP_201_CREATED)
 
 class AuthViewSet(viewsets.ViewSet):
     queryset = Profile.objects.all()
@@ -34,6 +74,14 @@ class AuthViewSet(viewsets.ViewSet):
         Authorization Token 123
         
         '''
+        data_fields = list(request.data.keys())
+
+        if (
+            'username' not in data_fields or 
+            'password' not in data_fields 
+        ):
+            return Response(status=HTTP_400_BAD_REQUEST)
+
         username = request.data['username']
         password = request.data['password']
 
@@ -41,7 +89,7 @@ class AuthViewSet(viewsets.ViewSet):
 
         if not user:
             return Response(
-                {'message': 'invalid credentials'}, 
+                {'error': 'invalid credentials'}, 
                 status=HTTP_400_BAD_REQUEST
             )
 
@@ -52,8 +100,9 @@ class AuthViewSet(viewsets.ViewSet):
     @action(
         detail=False,
         methods=['post'],
-        name='logout'
+        name='logout',
+        permission_classes=[IsAuthenticated]
     )
     def logout(self, request):
-        print(request.user.auth_token.delete())
+        request.user.auth_token.delete()
         return Response({ 'message': 'logged out successfully' })

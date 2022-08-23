@@ -175,5 +175,6 @@ cython_debug/
 superuser.txt
 
 dump.rdb
+celery.pid
 
 # End of https://www.toptal.com/developers/gitignore/api/django

@@ -5,7 +5,6 @@ class ProfileAdmin(admin.ModelAdmin):
 	model = Profile
 	fields = [
 		'user',
-		'date_of_birth',
 		'bio',
 		'avatar',
 	]

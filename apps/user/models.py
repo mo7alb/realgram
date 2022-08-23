@@ -7,9 +7,8 @@ class Profile(models.Model):
 		null=False, 
 		on_delete=models.CASCADE
 	)
-	date_of_birth = models.DateField()
 	bio = models.TextField(max_length=256, null=True)
-	avatar = models.ImageField(blank=True, null=True)
+	avatar = models.FileField(blank=True, null=True)
 
 	def __str__(self) -> str:
 		return self.user.username
