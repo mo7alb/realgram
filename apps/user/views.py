@@ -1,6 +1,6 @@
-from .models import Profile
 from django.contrib.auth import authenticate 
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -8,6 +8,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
 from .tasks import make_avatar
+from .models import Profile
+from .serializers import ProfileSerializer
 
 def checkDataFields(request_data, required_fields):
     ''' basic helper function to check if a list properties are passed along the request data '''
@@ -30,7 +32,7 @@ class NewProfileViewSet(viewsets.ViewSet):
     )
     def register(self, request):
         ''' allows new users to register '''
-        if (checkDataFields(request_data=request.data, required_fields=[
+        if (not checkDataFields(request_data=request.data, required_fields=[
             'username',
             'email',
             'first_name',
@@ -112,13 +114,17 @@ class AuthViewSet(viewsets.ViewSet):
         Authorization Token 123
         
         '''
+        print('request data ===>', checkDataFields(request_data=request.data, required_fields=[
+            'username',
+            'password',
+            ]))
         if (
-            checkDataFields(request_data=request.data, required_fields=[
+            not checkDataFields(request_data=request.data, required_fields=[
             'username',
             'password',
             ])
         ):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         username = request.data['username']
         password = request.data['password']
@@ -144,3 +150,12 @@ class AuthViewSet(viewsets.ViewSet):
     def logout(self, request):
         request.user.auth_token.delete()
         return Response({ 'message': 'logged out successfully' })
+
+class ProfileRetreivalViewSet(viewsets.ViewSet):
+    queryset = Profile.objects.all()
+
+    def retrieve(self, request, pk=None):
+        profile = get_object_or_404(self.queryset, pk=46)
+        serializer = ProfileSerializer(profile)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
