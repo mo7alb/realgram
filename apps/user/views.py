@@ -32,7 +32,8 @@ class NewProfileViewSet(viewsets.ViewSet):
     )
     def register(self, request):
         ''' allows new users to register '''
-        if (not checkDataFields(request_data=request.data, required_fields=[
+        request_data = request.data
+        if (not checkDataFields(request_data=request_data, required_fields=[
             'username',
             'email',
             'first_name',
@@ -69,27 +70,35 @@ class NewProfileViewSet(viewsets.ViewSet):
             # save user to db
             user.save()
 
-            bio = request.data['bio'] if request.data['bio'] else None
-            avatar = request.data['avatar'] if request.data['avatar'] else None
-
-            # create a profile for the user
-            profile = Profile(
-                user=user,
-                bio=bio,
-                avatar=avatar
-            )
-            # save profile to db
-            profile.save()
-
-            if avatar != None:
+            key_list =  list(request_data.keys())
+            if 'avatar' in key_list and 'bio' in key_list:
+                # create a profile for the user
+                profile = Profile(
+                    user=user,
+                    bio=request_data['bio'],
+                    avatar=request_data['avatar']
+                )
+                # save profile to db
+                profile.save()
                 make_avatar.delay(profile.pk)
+            elif 'avatar' not in key_list and 'bio' in key_list:
+                profile = Profile(
+                    user=user,
+                    bio=request_data['bio'],
+                )
+                profile.save()
+            else :
+                profile = Profile(
+                    user=user
+                )
 
             # return 201 response as user and profile were successfully created
             return Response({ 'profile': {
                 'id': profile.pk, 
                 'username': user.username,
                 'email': user.email,
-            } }, status=status.HTTP_201_CREATED)
+                }}, status=status.HTTP_201_CREATED
+            )
             
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
