@@ -127,3 +127,96 @@ class AuthViewSetTestCase(APITestCase):
 		res = self.client.post(self.login_url, data=self.incomplete_data)
 
 		self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_user_logout(self) -> None:
+		''' test if the user can successfully logout once logged in '''
+		log_res = self.client.post(self.login_url, data=self.data)
+		token = log_res.json()['token']
+
+		header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
+		res = self.client.post(
+			self.logout_url, 
+			data={},
+			**header
+		)
+
+		self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+class ProfileRetreivalTestCase(APITestCase):
+	data = None
+	login_data = None
+	base_url = ''
+	user_id = None
+	token = ''
+
+	def setUp(self) -> None:
+		self.base_url = '/api/profile/'
+		self.data = {
+			'username': 'cha',
+			'email': 'cha@lie.com',
+			'first_name': 'charlie',
+			'last_name': 'doe',
+			'password': 'super secret',
+		}
+		self.login_data = {
+			'username': 'cha',
+			'password': 'super secret',
+		}
+		
+		register_response = self.client.post('/api/profile/register/', data=self.data).json()
+		self.user_id = register_response['profile']['id']
+		self.token = self.client.post('/api/profile/authenticate/', data=self.login_data).json()['token']
+
+	def tearDown(self) -> None:
+		Profile.objects.all().delete()
+		User.objects.all().delete()
+	
+	def test_retrieve_route_correct_status_code(self):
+		header = {'HTTP_AUTHORIZATION': 'Token {}'.format(self.token)}
+
+		url = '/api/profile/{}/'.format(self.user_id)
+		retrieve = self.client.get(
+			url,
+			{},
+			**header
+		)
+
+		self.assertEqual(retrieve.status_code, status.HTTP_200_OK)
+	
+	def test_retrieve_route_correct_data(self):
+		header = {'HTTP_AUTHORIZATION': 'Token {}'.format(self.token)}
+
+		url = '/api/profile/{}/'.format(self.user_id)
+		retrieve = self.client.get(
+			url,
+			{},
+			**header
+		)
+		res_data = retrieve.json()
+		res_username = res_data['user']['username']
+		res_email = res_data['user']['email']
+		data = {
+			'username': 'cha',
+			'email': 'cha@lie.com',
+		}
+		self.assertEqual({'username': res_username, 'email': res_email}, data)
+	
+	def test_retrieve_route_incorrect_status_code(self):
+		header = {'HTTP_AUTHORIZATION': 'Token {}'.format(self.token)}
+
+		url = '/api/profile/100/'
+		retrieve = self.client.get(
+			url,
+			{},
+			**header
+		)
+
+		self.assertEqual(retrieve.status_code, status.HTTP_404_NOT_FOUND)
+	
+	def test_unauthorized_profile_retrieval(self):
+		url = '/api/profile/{}/'.format(self.user_id)
+
+		retrieve = self.client.get(url, {})
+
+		self.assertEqual(retrieve.status_code, status.HTTP_401_UNAUTHORIZED)
