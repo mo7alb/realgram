@@ -124,10 +124,6 @@ class AuthViewSet(viewsets.ViewSet):
         Authorization Token 123
         
         '''
-        print('request data ===>', checkDataFields(request_data=request.data, required_fields=[
-            'username',
-            'password',
-            ]))
         if (
             not checkDataFields(request_data=request.data, required_fields=[
             'username',
@@ -159,7 +155,10 @@ class AuthViewSet(viewsets.ViewSet):
     )
     def logout(self, request):
         request.user.auth_token.delete()
-        return Response({ 'message': 'logged out successfully' })
+        return Response(
+            { 'message': 'logged out successfully' }, 
+            status=status.HTTP_200_OK
+        )
 
 class ProfileRetreivalViewSet(viewsets.ViewSet):
     queryset = Profile.objects.all()
