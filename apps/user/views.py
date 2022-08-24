@@ -91,6 +91,7 @@ class NewProfileViewSet(viewsets.ViewSet):
                 profile = Profile(
                     user=user
                 )
+                profile.save()
 
             # return 201 response as user and profile were successfully created
             return Response({ 'profile': {

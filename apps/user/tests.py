@@ -19,4 +19,5 @@ class RegistrationTestCase(APITestCase):
 		}
 
 		res = self.client.post('/api/profile/register/', data=data)
+		print(res.json())
 		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
