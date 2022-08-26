@@ -8,7 +8,7 @@ class PostAdmin(admin.ModelAdmin):
 		'caption',
 		'body',
 		'img',
-		'user'
+		'profile'
 	]
 
 	class Meta:

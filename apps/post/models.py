@@ -13,9 +13,9 @@ class Post(models.Model):
 	# user who posted the post
 	profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
 	# saves the date time once Comment is created
-	created_at = models.DateField(null=False, auto_now_add=True, blank=False)
+	created_at = models.DateField(auto_now_add=True)
 	# saves the date time every time Comment is udpated
-	updated_at = models.DateField(null=False, auto_now=True, blank=False)
+	updated_at = models.DateField(auto_now=True)
 
 	def __str__(self) -> str:
 		return "{} - {}".format(self.user, self.title)
