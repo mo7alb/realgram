@@ -1,15 +1,19 @@
 from typing import Sequence
 
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.post.models import LikePost, Post
-from apps.post.serializers import LikePostSerializer, PostSerializer, PostListSerializer
+from apps.post.serializers import LikePostSerializer, PostListSerializer, PostSerializer
 
-
-class PostViewSet(viewsets.ModelViewSet):
+class PostViewSet(
+	mixins.CreateModelMixin,
+	mixins.ListModelMixin,
+	mixins.RetrieveModelMixin,
+	viewsets.GenericViewSet
+):
 	''' 
 	Viewset to create, retrieve, update, delete and to get a list of posts 
 	'''
@@ -30,12 +34,12 @@ class PostViewSet(viewsets.ModelViewSet):
 	def retrieve(self, request, pk=None) -> Response:
 		''' Send a single post to the client '''
 		# posts query set 
-		all_posts: Sequence[Post] = Post.objects.all()
-		# use shortcut method to find post or to return with a 404 error
-		post: Post = get_object_or_404(all_posts, pk)
+		queryset = Post.objects.all()
 
+		# use shortcut method to find post or to return with a 404 error
+		post = get_object_or_404(queryset, pk=pk)
 		# serialize the post data
-		serializer: PostSerializer = PostSerializer(post)
+		serializer = PostSerializer(post)
 		# send the serialized data to the client
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
