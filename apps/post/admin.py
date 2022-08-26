@@ -1,4 +1,18 @@
+from typing import Sequence
 from django.contrib import admin
-from .models import Post, LikePost
+from apps.post.models import Post, LikePost
 
-admin.site.register(Post)
+class PostAdmin(admin.ModelAdmin):
+	fields: Sequence[str] = [
+		'title',
+		'caption',
+		'body',
+		'img',
+		'user'
+	]
+
+	class Meta:
+		model = Post
+
+admin.site.register(Post, PostAdmin)
+admin.site.register(LikePost)
