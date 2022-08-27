@@ -1,15 +1,13 @@
 from typing import Sequence
-
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, status, viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework import mixins, viewsets
+from rest_framework import status
 from rest_framework.response import Response
-
-from apps.post.models import LikePost, Post
-from apps.post.serializers import (LikePostSerializer, PostListSerializer,
-                                   PostSerializer)
-from apps.post.tasks import make_post_img
+from rest_framework.permissions import AllowAny
+from apps.post.models import Post
 from apps.user.models import Profile
+from apps.post.serializers import PostListSerializer, PostSerializer
+from apps.post.tasks import make_post_img
 from datetime import date
 
 class PostViewSet(
@@ -128,8 +126,3 @@ class PostViewSet(
 		except:
 			# otherwise return with a status code of 500
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class LikePostViewSet(viewsets.ModelViewSet):
-	''' viewset to create likes and to destroy them '''
-	queryset = LikePost.objects.all()
-	serializer_class = LikePostSerializer
