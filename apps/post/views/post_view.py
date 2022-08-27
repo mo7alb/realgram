@@ -15,6 +15,7 @@ class PostViewSet(
 	mixins.ListModelMixin,
 	mixins.RetrieveModelMixin,
 	mixins.UpdateModelMixin,
+	mixins.DestroyModelMixin,
 	viewsets.GenericViewSet
 ):
 	''' 
@@ -126,3 +127,16 @@ class PostViewSet(
 		except:
 			# otherwise return with a status code of 500
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+	def destroy(self, request, pk=None):
+		try:
+			post = Post.objects.get(pk=pk)
+			post.delete()
+			return Response(
+				{ 'details': 'sucessfully deleted the post with the id {}'.format(pk) }, 
+				status=status.HTTP_202_ACCEPTED
+			)
+		except Post.DoesNotExist:
+			return Response({ 'details': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+		except:
+			return Response({ 'details': 'An error occured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
