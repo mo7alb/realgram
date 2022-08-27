@@ -1,5 +1,6 @@
+from webbrowser import get
 from apps.post.models import LikePost, Post
-from apps.post.serializers import LikePostSerializer
+from apps.post.serializers import LikePostSerializer, LikeSerializer
 from apps.user.models import Profile
 from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import mixins, status, viewsets
@@ -45,7 +46,7 @@ class LikePostViewSet(
 				profile=profile
 			)
 			like.save()
-			return Response({ 'details': str(like) })
+			return Response({ 'details': str(like) }, status=status.HTTP_201_CREATED)
 		except:
 			return Response(
 				{ 'details': 'Error creating like' }, 
@@ -64,7 +65,9 @@ class LikePostViewSet(
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	def retrieve(self, request, pk=None):
-		like = get_object_or_404(LikePost.objects.all(), pk=pk)
-		serializer = LikePostSerializer(like)
+		post = get_object_or_404(Post.objects.all(), pk=pk)
+		likes = get_list_or_404(LikePost.objects.all(), post=post)
+
+		serializer = LikeSerializer(likes, many=True)
 
 		return Response(serializer.data, status=status.HTTP_200_OK)

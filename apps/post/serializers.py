@@ -1,3 +1,4 @@
+from dataclasses import fields
 from typing import Sequence
 
 from django.contrib.auth.models import User
@@ -63,3 +64,9 @@ class LikePostSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = LikePost
 		fields = ['id', 'profile', 'post']
+
+class LikeSerializer(serializers.ModelSerializer):
+
+	class Meta:
+		model = LikePost
+		fields = ['id']
