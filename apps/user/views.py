@@ -7,9 +7,9 @@ from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
-from .tasks import make_avatar
-from .models import Profile
-from .serializers import ProfileSerializer
+from apps.user.tasks import make_avatar
+from apps.user.models import Profile
+from apps.user.serializers import ProfileSerializer
 
 def checkDataFields(request_data, required_fields):
     ''' basic helper function to check if a list properties are passed along the request data '''

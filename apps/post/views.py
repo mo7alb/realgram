@@ -1,14 +1,18 @@
 from os import stat
 from typing import Sequence
 
+from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.forms.models import model_to_dict
+
 from apps.post.models import LikePost, Post
-from apps.post.serializers import LikePostSerializer, PostListSerializer, PostSerializer, PostListProfileSerializer
+from apps.post.serializers import (LikePostSerializer, PostListSerializer,
+                                   PostSerializer)
+from apps.post.tasks import make_post_img
 from apps.user.models import Profile
+
 
 class PostViewSet(
 	mixins.CreateModelMixin,
@@ -70,6 +74,7 @@ class PostViewSet(
 			)
 		
 			new_post.save()
+			make_post_img(new_post.pk)
 			return Response({
 				'pk': new_post.pk,
 				'title': new_post.title
