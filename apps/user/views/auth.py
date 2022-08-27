@@ -27,14 +27,17 @@ class AuthViewSet(viewsets.ViewSet):
         Authorization Token 123
         
         '''
-        if (key not in request.data for key in ['username','password']):
-            return Response(
-					{'error': 'username and password are required'}, 
-					status=status.HTTP_400_BAD_REQUEST
-				)
+        request_data = request.data
+        key_list = list(request_data.keys())
 
-        username = request.data['username']
-        password = request.data['password']
+        if ('username' not in key_list or 'password' not in key_list):
+            return Response(
+                {'error': 'username and password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        username = request_data['username']
+        password = request_data['password']
 
         user = authenticate(username=username, password=password)
 

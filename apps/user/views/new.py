@@ -20,14 +20,21 @@ class NewProfileViewSet(viewsets.ViewSet):
 		''' allows new users to register '''
 		request_data = request.data
 
-		if (key not in request_data for key in [
+		required = [
 			'username',
 			'email',
 			'first_name',
 			'last_name',
 			'password'
-		]):
-			return Response(status=status.HTTP_400_BAD_REQUEST)
+		]
+
+		key_list = list(request_data.keys())
+		for required_key in required:
+			if required_key not in key_list:
+				return Response(
+					{'error': 'username, email, first_name, last_name and password are required'}, 
+					status=status.HTTP_400_BAD_REQUEST
+            )
 
 		usernames = User.objects.filter(username=request_data['username'])
 		if len(usernames) > 0:
