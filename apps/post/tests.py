@@ -220,31 +220,80 @@ class PostUpdateTestCase(APITestCase):
 		Profile.objects.all().delete()
 		User.objects.all().delete()
 
-	def test_update_returns_correct_status(self):
+	def test_update_returns_correct_status(self) -> None:
 		''' test if update returns correct status code '''
 		response = self.client.put(self.url, self.data)
 		self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
-	def test_update_returns_correct_data(self):
+	def test_update_returns_correct_data(self) -> None:
 		''' test if updated post has correct data '''
 		response = self.client.put(self.url, self.data)
 		post = self.client.get(self.url).json()
 
 		self.assertEqual(post['body'], self.data['body'])
 
-	def test_changing_post_profile_fails(self):
+	def test_changing_post_profile_fails(self) -> None:
 		''' 
 		test if trying to update the profile in a post fails with 400 status code 
 		'''
 		response = self.client.put(self.url, self.data_with_profile)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 	
-	def test_not_passing_anything_fails(self):
+	def test_not_passing_anything_fails(self) -> None:
 		''' test if an empty dict is passed to as body fails with 400 status code '''
 		response = self.client.put(self.url, {})
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-	def test_incorrect_post_pk_fails(self):
+	def test_incorrect_post_pk_fails(self) -> None:
 		''' test if passing an incorrect post pk fails with a 404 error '''
 		response = self.client.put(self.incorrect_url, self.data)
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class DeletePostTestCase(APITestCase):
+	url = ''
+	incorrect_url = ''
+	user = None
+	profile = None
+	post = None
+
+	def setUp(self) -> None:
+		''' set up variables for tests to use them '''
+		self.user = User.objects.create(
+				username="johndoe",
+				first_name="john",
+				last_name="johndoe",
+				email="johndoe@somemail.com",
+			)
+		self.profile = Profile.objects.create(
+			bio="cool guy", 
+			user=self.user
+		)
+		self.post = Post.objects.create(
+			profile=self.profile,
+			title="welcome to my website"
+		)
+		self.url = '/api/posts/{}/'.format(self.post.pk)
+		self.incorrect_url = '/api/posts/100000/'
+		
+	def tearDown(self) -> None:
+		''' clean the db once the tests are over'''
+		Post.objects.all().delete()
+		Profile.objects.all().delete()
+		User.objects.all().delete()
+
+	def test_post_delete_sucess(self) -> None:
+		''' test if deleting an exisiting post successfully returns a status of 202 '''
+		response = self.client.delete(self.url)
+		self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+	def test_post_delete_fail(self) -> None:
+		''' tests if deleting a post that does not exisits returns a status of 404 '''
+		response = self.client.delete(self.incorrect_url)
+		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+	def test_access_post_after_deleting_fails(self) -> None:
+		''' test if accessing a post after deleting it fails '''
+		response = self.client.delete(self.url)
+		response_retrieving = self.client.get(self.url)
+
+		self.assertEqual(response_retrieving.status_code, status.HTTP_404_NOT_FOUND)

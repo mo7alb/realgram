@@ -28,20 +28,16 @@ class PostViewSet(
 	def list(self, request) -> Response:
 		''' Send a list of posts to the client '''
 		# list of all posts
-		posts: Sequence[Post] = Post.objects.all().order_by('created_at')
+		posts: Sequence[Post] = Post.objects.all().order_by('-created_at')
 		# serialize the posts list
 		serializer: PostListSerializer = PostListSerializer(posts, many=True)
-
 		# respond to the client with the list
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def retrieve(self, request, pk=None) -> Response:
 		''' Send a single post to the client '''
-		# posts query set 
-		queryset = Post.objects.all()
-
 		# use shortcut method to find post or to return with a 404 error
-		post = get_object_or_404(queryset, pk=pk)
+		post = get_object_or_404(Post.objects.all(), pk=pk)
 		# serialize the post data
 		serializer = PostSerializer(post)
 		# send the serialized data to the client
@@ -54,13 +50,10 @@ class PostViewSet(
 		if not 'title' in data or not 'profile' in data:
 			return Response({'detail': 'Values missing, title and profile are required'}, status=status.HTTP_400_BAD_REQUEST)
 
+		profile = get_object_or_404(Profile.objects.all(), pk=data['profile'])
 		try:
-			profile = Profile.objects.get(pk=data['profile'])
 			data['profile'] = profile
-		except Profile.DoesNotExist:
-			return Response({ 'details': 'User not found' }, status=status.HTTP_404_NOT_FOUND)
-
-		try:
+		
 			new_post = Post(
 				title=data['title'],
 				profile=profile,
@@ -70,16 +63,12 @@ class PostViewSet(
 				created_at=None,
 				updated_at=None,
 			)
-		
 			new_post.save()
 			
 			if 'img' in data:
 				make_post_img(new_post.pk)
 
-			return Response({
-				'pk': new_post.pk,
-				'title': new_post.title
-			}, status=status.HTTP_201_CREATED)
+			return Response({'pk': new_post.pk,'title': new_post.title}, status=status.HTTP_201_CREATED)
 		except:
 			return Response({ 'details': 'Some error occured' }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -92,22 +81,15 @@ class PostViewSet(
 		if 'profile' in request_data:
 			return Response({ 'details': 'profile cannot be updated' }, status=status.HTTP_400_BAD_REQUEST)
 
+		# get the post from db
+		post = get_object_or_404(Post.objects.all(), pk=pk)
 		try:
-			# get the post from db
-			post = Post.objects.get(pk=pk)
-			
-			# determine which properties are to be updated
-			body = request_data['body'] if 'body' in request_data else post.body
-			title = request_data['title'] if 'title' in request_data else post.title
-			caption = request_data['caption'] if 'caption' in request_data else post.caption
-			img = request_data['img'] if 'img' in request_data else post.img
-
 			# update post 
 			Post.objects.filter(pk=pk).update(
-				body=body,
-				title=title,
-				caption=caption,
-				img=img,
+				body=request_data['body'] if 'body' in request_data else post.body,
+				title=request_data['title'] if 'title' in request_data else post.title,
+				caption=request_data['caption'] if 'caption' in request_data else post.caption,
+				img=request_data['img'] if 'img' in request_data else post.img,
 				updated_at=date.today(),
 			)
 
@@ -121,22 +103,17 @@ class PostViewSet(
 			serializer = self.get_serializer(post)
 			# Respond with an updated post and 202 status code 
 			return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-		except Post.DoesNotExist:
-			# respond with 404 if post does not exists
-			return Response({ 'details': 'invalid post' }, status=status.HTTP_404_NOT_FOUND)
 		except:
 			# otherwise return with a status code of 500
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 	def destroy(self, request, pk=None):
+		post = get_object_or_404(Post.objects.all(), pk=pk)
 		try:
-			post = Post.objects.get(pk=pk)
 			post.delete()
 			return Response(
 				{ 'details': 'sucessfully deleted the post with the id {}'.format(pk) }, 
 				status=status.HTTP_202_ACCEPTED
 			)
-		except Post.DoesNotExist:
-			return Response({ 'details': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
 		except:
 			return Response({ 'details': 'An error occured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
