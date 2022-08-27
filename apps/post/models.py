@@ -11,14 +11,14 @@ class Post(models.Model):
 	# image related to the post 
 	img = models.ImageField(blank=True, null=True, upload_to='posts/')
 	# user who posted the post
-	profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+	profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
 	# saves the date time once Comment is created
-	created_at = models.DateField(auto_now_add=True)
+	created_at = models.DateField(null=True, blank=True, auto_now_add=True)
 	# saves the date time every time Comment is udpated
-	updated_at = models.DateField(auto_now=True)
+	updated_at = models.DateField(null=True, blank=True, auto_now=True)
 
 	def __str__(self) -> str:
-		return "{} - {}".format(self.user, self.title)
+		return "{} - {}".format(self.profile, self.title)
 
 class LikePost(models.Model):
 	# liking requires a user

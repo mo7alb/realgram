@@ -49,10 +49,11 @@ class PostSerializer(serializers.ModelSerializer):
 		fields = '__all__'
 
 	def create(self, validated_data) -> Post:
-		username = list(validated_data.pop('user').values())[0]
-		print(username)
-		post = Post.objects.create(**validated_data)
-		print("post ===> ", post)
+		post = Post(
+			**validated_data, 
+			created_at=None,
+			updated_at=None
+		)
 		return post
 
 class LikePostSerializer(serializers.ModelSerializer):

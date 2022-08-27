@@ -1,12 +1,14 @@
+from os import stat
 from typing import Sequence
 
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
+from django.forms.models import model_to_dict
 from apps.post.models import LikePost, Post
-from apps.post.serializers import LikePostSerializer, PostListSerializer, PostSerializer
+from apps.post.serializers import LikePostSerializer, PostListSerializer, PostSerializer, PostListProfileSerializer
+from apps.user.models import Profile
 
 class PostViewSet(
 	mixins.CreateModelMixin,
@@ -45,7 +47,35 @@ class PostViewSet(
 
 	def create(self, request) -> Response:
 		''' Allow clients to create a new post '''
-		pass
+		data = {key: request.data[key] for key in list(request.data.keys())}
+
+		if not 'title' in data or not 'profile' in data:
+			return Response({'detail': 'Values missing, title and profile are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			profile = Profile.objects.get(pk=data['profile'])
+			data['profile'] = profile
+		except Profile.DoesNotExist:
+			return Response({ 'details': 'User not found' }, status=status.HTTP_404_NOT_FOUND)
+
+		try:
+			new_post = Post(
+				title=data['title'],
+				profile=profile,
+				img=data['img'] if 'img' in data else None,
+				body=data['body'] if 'body' in data else None,
+				caption=data['caption'] if 'caption' in data else None,
+				created_at=None,
+				updated_at=None,
+			)
+		
+			new_post.save()
+			return Response({
+				'pk': new_post.pk,
+				'title': new_post.title
+			}, status=status.HTTP_201_CREATED)
+		except:
+			return Response({ 'details': 'Some error occured' }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LikePostViewSet(viewsets.ModelViewSet):
 	queryset = LikePost.objects.all()
