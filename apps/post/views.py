@@ -74,7 +74,10 @@ class PostViewSet(
 			)
 		
 			new_post.save()
-			make_post_img(new_post.pk)
+			
+			if 'img' in data:
+				make_post_img(new_post.pk)
+
 			return Response({
 				'pk': new_post.pk,
 				'title': new_post.title
