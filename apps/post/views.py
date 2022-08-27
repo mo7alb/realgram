@@ -1,7 +1,5 @@
-from os import stat
 from typing import Sequence
 
-from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import AllowAny
@@ -12,12 +10,13 @@ from apps.post.serializers import (LikePostSerializer, PostListSerializer,
                                    PostSerializer)
 from apps.post.tasks import make_post_img
 from apps.user.models import Profile
-
+from datetime import date
 
 class PostViewSet(
 	mixins.CreateModelMixin,
 	mixins.ListModelMixin,
 	mixins.RetrieveModelMixin,
+	mixins.UpdateModelMixin,
 	viewsets.GenericViewSet
 ):
 	''' 
@@ -85,6 +84,52 @@ class PostViewSet(
 		except:
 			return Response({ 'details': 'Some error occured' }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+	def update(self, request, pk=None):
+		''' update a post in the db '''
+		request_data = request.data
+		if not bool(request_data):
+			return Response({ 'details': 'invalid update data' }, status=status.HTTP_400_BAD_REQUEST)
+
+		if 'profile' in request_data:
+			return Response({ 'details': 'profile cannot be updated' }, status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			# get the post from db
+			post = Post.objects.get(pk=pk)
+			
+			# determine which properties are to be updated
+			body = request_data['body'] if 'body' in request_data else post.body
+			title = request_data['title'] if 'title' in request_data else post.title
+			caption = request_data['caption'] if 'caption' in request_data else post.caption
+			img = request_data['img'] if 'img' in request_data else post.img
+
+			# update post 
+			Post.objects.filter(pk=pk).update(
+				body=body,
+				title=title,
+				caption=caption,
+				img=img,
+				updated_at=date.today(),
+			)
+
+			# if image is update, rescale the image
+			if 'img' in request_data:
+				make_post_img(post.pk)
+			
+			# get the updated post from the db
+			post.refresh_from_db()
+			# serialize the post 
+			serializer = self.get_serializer(post)
+			# Respond with an updated post and 202 status code 
+			return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+		except Post.DoesNotExist:
+			# respond with 404 if post does not exists
+			return Response({ 'details': 'invalid post' }, status=status.HTTP_404_NOT_FOUND)
+		except:
+			# otherwise return with a status code of 500
+			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class LikePostViewSet(viewsets.ModelViewSet):
+	''' viewset to create likes and to destroy them '''
 	queryset = LikePost.objects.all()
 	serializer_class = LikePostSerializer
