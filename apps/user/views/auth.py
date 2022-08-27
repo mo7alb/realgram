@@ -1,8 +1,7 @@
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate 
-from rest_framework import viewsets
-from rest_framework import status
 from apps.user.models import Profile
+from django.contrib.auth import authenticate
+from rest_framework import status, viewsets
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response

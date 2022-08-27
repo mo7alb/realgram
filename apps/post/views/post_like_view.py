@@ -1,16 +1,16 @@
-from turtle import pos
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
 from apps.post.models import LikePost, Post
+from apps.post.serializers import LikePostSerializer
 from apps.user.models import Profile
-from apps.post.serializers import LikePostSerializer, ProfileSerializer, PostSerializer
+from django.shortcuts import get_object_or_404, get_list_or_404
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 class LikePostViewSet(
 	mixins.CreateModelMixin, 
 	mixins.DestroyModelMixin,
+	mixins.RetrieveModelMixin,
 	viewsets.GenericViewSet
 ):
 	''' viewset to create likes, retrieve them and to destroy them '''
@@ -19,7 +19,7 @@ class LikePostViewSet(
 	# to be changed (AllowAny is to be replaced with IsAuthenticated)
 	permission_classes = [AllowAny]
 
-	def create(self, request):
+	def create(self, request) -> Response:
 		if 'profile' not in request.data or 'post' not in request.data:
 			return Response({'details': 'post and profile are required'}, status=status.HTTP_400_BAD_REQUEST)
 		
@@ -51,3 +51,20 @@ class LikePostViewSet(
 				{ 'details': 'Error creating like' }, 
 				status=status.HTTP_500_INTERNAL_SERVER_ERROR
 			)
+
+	def destroy(self, request, pk=None) -> Response:
+		like = get_object_or_404(LikePost.objects.all(), pk=pk)
+		try:
+			like.delete()
+			return Response(
+				{ 'details': 'successfully deleted like' },
+				status=status.HTTP_202_ACCEPTED
+			)
+		except:
+			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+	def retrieve(self, request, pk=None):
+		like = get_object_or_404(LikePost.objects.all(), pk=pk)
+		serializer = LikePostSerializer(like)
+
+		return Response(serializer.data, status=status.HTTP_200_OK)
