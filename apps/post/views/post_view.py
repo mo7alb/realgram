@@ -23,6 +23,7 @@ class PostViewSet(
 	'''
 	queryset = Post.objects.all()
 	serializer_class = PostListSerializer
+	# to be changed (AllowAny is to be replaced with IsAuthenticated)
 	permission_classes = [AllowAny]
 
 	def list(self, request) -> Response:

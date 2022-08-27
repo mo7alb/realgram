@@ -57,7 +57,7 @@ class PostSerializer(serializers.ModelSerializer):
 		return post
 
 class LikePostSerializer(serializers.ModelSerializer):
-	user = ProfileSerializer()
+	profile = ProfileSerializer()
 	post = PostSerializer()
 	
 	class Meta:

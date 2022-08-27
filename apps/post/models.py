@@ -1,3 +1,4 @@
+import profile
 from django.db import models
 from apps.user.models import Profile
 
@@ -18,11 +19,14 @@ class Post(models.Model):
 	updated_at = models.DateField(null=True, blank=True, auto_now=True)
 
 	def __str__(self) -> str:
-		return "{} - {}".format(self.profile, self.title)
+		return "{}".format(self.title)
 
 class LikePost(models.Model):
-	# liking requires a user
-	user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+	# liking requires a user profile
+	profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
 	# liking requires a post
 	post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+	def __str__(self) -> str:
+		return "{} liked {}".format(self.profile, self.post)
 	
