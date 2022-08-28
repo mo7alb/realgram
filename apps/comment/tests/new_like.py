@@ -9,7 +9,10 @@ from apps.comment.models import Comment, LikeComment
 class NewCommentLikeTestCase(APITestCase):
 	url = ''
 	profile = None
-
+	post = None
+	comment = None
+	data = None
+	
 	def setUp(self) -> None:
 		self.profile = Profile.objects.create(
 			bio='cool guy',

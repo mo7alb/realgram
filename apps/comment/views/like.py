@@ -10,6 +10,7 @@ from apps.user.models import Profile
 
 class LikeCommentViewSet(
 	mixins.CreateModelMixin,
+	mixins.DestroyModelMixin,
 	viewsets.GenericViewSet
 ):
 	queryset = LikeComment.objects.all()

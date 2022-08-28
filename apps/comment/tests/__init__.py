@@ -4,3 +4,4 @@ from .update_comments import *
 from .delete_comment import *
 
 from .new_like import *
+from .delete_like import *
