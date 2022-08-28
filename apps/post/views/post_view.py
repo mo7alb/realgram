@@ -107,14 +107,3 @@ class PostViewSet(
 		except:
 			# otherwise return with a status code of 500
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-	def destroy(self, request, pk=None):
-		post = get_object_or_404(Post.objects.all(), pk=pk)
-		try:
-			post.delete()
-			return Response(
-				{ 'details': 'sucessfully deleted the post with the id {}'.format(pk) }, 
-				status=status.HTTP_202_ACCEPTED
-			)
-		except:
-			return Response({ 'details': 'An error occured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -64,9 +64,9 @@ class PostUpdateTestCase(APITestCase):
 	def test_update_returns_correct_data(self) -> None:
 		''' test if updated post has correct data '''
 		response = self.client.put(self.url, self.data)
-		post = self.client.get(self.url).json()
+		data = self.client.get(self.url).json()
 
-		self.assertEqual(post['body'], self.data['body'])
+		self.assertEqual(data['body'], self.data['body'])
 
 	def test_changing_post_profile_fails(self) -> None:
 		''' 

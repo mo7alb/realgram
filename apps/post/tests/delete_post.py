@@ -39,7 +39,7 @@ class DeletePostTestCase(APITestCase):
 	def test_post_delete_sucess(self) -> None:
 		''' test if deleting an exisiting post successfully returns a status of 202 '''
 		response = self.client.delete(self.url)
-		self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+		self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 	def test_post_delete_fail(self) -> None:
 		''' tests if deleting a post that does not exisits returns a status of 404 '''
