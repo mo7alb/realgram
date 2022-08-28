@@ -178,5 +178,6 @@ dump.rdb
 celery.pid
 
 avatars/
+posts/
 
 # End of https://www.toptal.com/developers/gitignore/api/django
