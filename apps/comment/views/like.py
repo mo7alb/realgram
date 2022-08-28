@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, get_list_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, mixins
 from rest_framework import status
 from rest_framework.response import Response
@@ -15,7 +15,7 @@ class LikeCommentViewSet(
 ):
 	queryset = LikeComment.objects.all()
 	serializer_class = LikeCommentSerializer
-	permission_classes = [AllowAny]
+	permission_classes = [IsAuthenticated]
 
 	def create(self, request):
 		''' create a like for a comment '''

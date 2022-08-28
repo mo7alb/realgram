@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 class RetrieveLikeTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	incorrect_url = ''
 	first_profile = None
@@ -14,6 +16,21 @@ class RetrieveLikeTestCase(APITestCase):
 
 	def setUp(self) -> None:
 		''' set up variables for tests to use them '''
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
+
 		# first user
 		self.first_profile = Profile.objects.create(
 			bio="cool guy", 
@@ -59,15 +76,15 @@ class RetrieveLikeTestCase(APITestCase):
 
 	def test_like_retrieve_sucess_code(self):
 		''' test if retrieve route returns a status code of 200 '''
-		response = self.client.get(self.url)
+		response = self.client.get(self.url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 	def test_like_retrieve_sucess_data(self):
 		''' test if retrieve route returns a status code of 200 '''
-		response = self.client.get(self.url).json()
+		response = self.client.get(self.url, {}, **self.header).json()
 		self.assertEqual(response, [{ 'id': self.first_like.pk }, { 'id': self.second_like.pk },])
 
 	def test_like_retrieve_incorrect_post(self):
 		''' test if retrieve route returns a status code of 404 on incorrect post pk passed '''
-		response = self.client.get(self.incorrect_url)
+		response = self.client.get(self.incorrect_url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

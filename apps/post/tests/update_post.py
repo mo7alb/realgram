@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 class PostUpdateTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	user = None
 	second_user = None
@@ -16,6 +18,21 @@ class PostUpdateTestCase(APITestCase):
 
 	def setUp(self) -> None:
 		''' set up variables for tests to use them '''
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
+
 		self.user = User.objects.create(
 				username="johndoe",
 				first_name="john",
@@ -58,30 +75,30 @@ class PostUpdateTestCase(APITestCase):
 
 	def test_update_returns_correct_status(self) -> None:
 		''' test if update returns correct status code '''
-		response = self.client.put(self.url, self.data)
+		response = self.client.put(self.url, self.data, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
 	def test_update_returns_correct_data(self) -> None:
 		''' test if updated post has correct data '''
-		response = self.client.put(self.url, self.data)
-		data = self.client.get(self.url).json()
-
+		response = self.client.put(self.url, self.data, **self.header)
+		data = self.client.get(self.url, {}, **self.header).json()
 		self.assertEqual(data['body'], self.data['body'])
 
 	def test_changing_post_profile_fails(self) -> None:
 		''' 
 		test if trying to update the profile in a post fails with 400 status code 
 		'''
-		response = self.client.put(self.url, self.data_with_profile)
+		response = self.client.put(self.url, self.data_with_profile, **self.header)
+
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 	
 	def test_not_passing_anything_fails(self) -> None:
 		''' test if an empty dict is passed to as body fails with 400 status code '''
-		response = self.client.put(self.url, {})
+		response = self.client.put(self.url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_incorrect_post_pk_fails(self) -> None:
 		''' test if passing an incorrect post pk fails with a 404 error '''
-		response = self.client.put(self.incorrect_url, self.data)
+		response = self.client.put(self.incorrect_url, self.data, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 

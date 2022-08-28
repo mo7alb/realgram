@@ -1,11 +1,9 @@
-from webbrowser import get
 from apps.post.models import LikePost, Post
 from apps.post.serializers import LikePostSerializer, LikeSerializer
 from apps.user.models import Profile
 from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 class LikePostViewSet(
@@ -17,8 +15,7 @@ class LikePostViewSet(
 	''' viewset to create likes, retrieve them and to destroy them '''
 	queryset = LikePost.objects.all()
 	serializer_class = LikePostSerializer
-	# to be changed (AllowAny is to be replaced with IsAuthenticated)
-	permission_classes = [AllowAny]
+	permission_classes = [IsAuthenticated]
 
 	def create(self, request) -> Response:
 		if 'profile' not in request.data or 'post' not in request.data:

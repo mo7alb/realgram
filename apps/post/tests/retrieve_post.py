@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 class PostRetrievalTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	incorrect_url = ''
 	user = None
@@ -13,6 +15,20 @@ class PostRetrievalTestCase(APITestCase):
 
 	def setUp(self) -> None:
 		''' set up variables for tests to use them '''
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
 		self.user = User.objects.create(
 				username="johndoe",
 				first_name="john",
@@ -38,19 +54,19 @@ class PostRetrievalTestCase(APITestCase):
 
 	def test_retrieval_route_status_code_correct_url(self):
 		''' check if route returns 200 status code on correct url '''
-		response = self.client.get(self.url)
+		response = self.client.get(self.url, {}, **self.header)
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 	
 	def test_retrieval_route_status_code_incorrect_url(self):
 		''' check if retrieve route returns 404 status code on incorrect url '''
-		response = self.client.get(self.incorrect_url)
+		response = self.client.get(self.incorrect_url, {}, **self.header)
 
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 	def test_retrieval_route_data(self):
 		''' check if route returns 200 status code on correct url '''
-		response = self.client.get(self.url)
+		response = self.client.get(self.url, {}, **self.header)
 		data = response.json()
 
 		self.assertEqual(data['title'], self.post.title)
