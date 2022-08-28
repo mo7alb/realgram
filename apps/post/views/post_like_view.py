@@ -27,17 +27,11 @@ class LikePostViewSet(
 		post = get_object_or_404(Post.objects.all(), pk=request.data['post'])
 		profile = get_object_or_404(Profile.objects.all(), pk=request.data['profile'])
 
-		try:
-			previous_likes = LikePost.objects.filter(post=post).filter(profile=profile)
-			if len(previous_likes) > 0:
-				return Response(
-					{ 'details': 'like already exists' }, 
-					status=status.HTTP_400_BAD_REQUEST
-				)
-		except:
+		previous_likes = LikePost.objects.filter(post=post).filter(profile=profile)
+		if len(previous_likes) > 0:
 			return Response(
-				{ 'details': 'Error creating like' }, 
-				status=status.HTTP_500_INTERNAL_SERVER_ERROR
+				{ 'details': 'like already exists' }, 
+				status=status.HTTP_400_BAD_REQUEST
 			)
 		
 		try: 

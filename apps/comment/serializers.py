@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.user.models import Profile
+from apps.user.serializers import ProfileSerializer
 from .models import Comment, LikeComment
 
 class CommentProfileSerializer(serializers.ModelSerializer):
@@ -15,7 +16,13 @@ class CommentSerializer(serializers.ModelSerializer):
 		fields = ['pk', 'message', 'profile']
 
 class LikeCommentSerializer(serializers.ModelSerializer):
+	comment = CommentSerializer()
+	profile = ProfileSerializer()
+	
 	class Meta: 
 		model = LikeComment
-		fields = '__all__'
+		fields = [
+			'comment',
+			'profile'
+		]
 	
