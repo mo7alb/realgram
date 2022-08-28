@@ -47,7 +47,7 @@ class DeleteCommentsTestCase(APITestCase):
 		''' test if deleting a comment returns a status code of 202 '''
 		response = self.client.delete(self.url)
 
-		self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+		self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 	def test_deleting_comment_fail_status_code(self) -> None:
 		''' 

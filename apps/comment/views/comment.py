@@ -94,14 +94,4 @@ class CommentViewSet(
 		except:
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-	def destroy(self, request, pk=None) -> Response:
-		comment = get_object_or_404(self.queryset, pk=pk)
-
-		try:
-			comment.delete()
-			return Response(
-				{ 'details': '' }, 
-				status=status.HTTP_202_ACCEPTED
-			)
-		except:
-			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+	
