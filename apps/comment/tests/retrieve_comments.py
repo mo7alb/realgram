@@ -6,6 +6,8 @@ from apps.post.models import Post
 from apps.user.models import Profile
 
 class RetrieveCommentsTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	incorrect_url = ''
 	profile = None
@@ -17,6 +19,20 @@ class RetrieveCommentsTestCase(APITestCase):
 
 	def setUp(self) -> None:
 		''' set up variables to be used in tests '''
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
 		self.profile = Profile.objects.create(
 			bio="cool guy", 
 			user=User.objects.create(
@@ -65,17 +81,17 @@ class RetrieveCommentsTestCase(APITestCase):
 
 	def test_retrieving_comments_return_status_code(self) -> None:
 		''' test if retrieving a list of comment returns a status code of 200 '''
-		response = self.client.get(self.url)
+		response = self.client.get(self.url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 	def test_retrieving_comments_return_error_status_code(self) -> None:
 		''' test if creating a new comment returns a status code of 404 '''
-		response = self.client.get(self.incorrect_post_url)
+		response = self.client.get(self.incorrect_post_url, {}, **self.header)
 		
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 	def test_retrieving_(self) -> None:
 		''' test if creating a new comment returns a status code of 404 '''
-		response = self.client.get(self.post_with_no_comments_url)
+		response = self.client.get(self.post_with_no_comments_url, {}, **self.header)
 		
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

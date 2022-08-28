@@ -7,6 +7,8 @@ from apps.post.models import Post
 from apps.user.models import Profile
 
 class DeleteCommentsTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	incorrect_url = ''
 	profile = None 
@@ -15,6 +17,20 @@ class DeleteCommentsTestCase(APITestCase):
 
 	def setUp(self) -> None:
 		''' set up variables to be used in tests '''
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
 		self.profile = Profile.objects.create(
 			bio="cool guy", 
 			user=User.objects.create(
@@ -45,7 +61,7 @@ class DeleteCommentsTestCase(APITestCase):
 
 	def test_deleting_comment_success_status_code(self) -> None:
 		''' test if deleting a comment returns a status code of 202 '''
-		response = self.client.delete(self.url)
+		response = self.client.delete(self.url, {}, **self.header)
 
 		self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -53,6 +69,6 @@ class DeleteCommentsTestCase(APITestCase):
 		''' 
 		test if trying to delete a comment that does not exists a status code of 404 
 		'''
-		response = self.client.delete(self.incorrect_url)
+		response = self.client.delete(self.incorrect_url, {}, **self.header)
 
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

@@ -7,6 +7,8 @@ from apps.post.models import Post
 from apps.comment.models import Comment, LikeComment
 
 class deleteCommentLikeTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	incorrect_url = ''
 	profile = None
@@ -15,11 +17,25 @@ class deleteCommentLikeTestCase(APITestCase):
 	like = None
 
 	def setUp(self) -> None:
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
 		self.profile = Profile.objects.create(
 			bio='cool guy',
 			user=User.objects.create(
-				username='doey',
-				email='doey@somedomain.com',
+				username='doey2',
+				email='doey2@somedomain.com',
 				first_name='doey',
 				last_name='johnson'
 			)
@@ -41,10 +57,10 @@ class deleteCommentLikeTestCase(APITestCase):
 
 	def test_delete_like_success(self):
 		''' test if successfully deleting a like returns a status code of 204 '''
-		response = self.client.delete(self.url)
+		response = self.client.delete(self.url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 	def test_delete_like_fail(self):
 		''' test if deleting a like that does not exists returns a status code of 404 '''
-		response = self.client.delete('/api/like-comment/12000/')
+		response = self.client.delete('/api/like-comment/12000/', {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

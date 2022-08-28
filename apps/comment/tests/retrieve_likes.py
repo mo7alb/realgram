@@ -7,6 +7,8 @@ from apps.post.models import Post
 from apps.comment.models import Comment, LikeComment
 
 class RetrieveCommentLikesTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	incorrect_url = ''
 	profile = None
@@ -15,11 +17,25 @@ class RetrieveCommentLikesTestCase(APITestCase):
 	like = None
 	
 	def setUp(self) -> None:
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
 		self.profile = Profile.objects.create(
 			bio='cool guy',
 			user=User.objects.create(
-				username='doey',
-				email='doey@somedomain.com',
+				username='doey2',
+				email='doey2@somedomain.com',
 				first_name='doey',
 				last_name='johnson'
 			)
@@ -52,13 +68,13 @@ class RetrieveCommentLikesTestCase(APITestCase):
 		User .objects.all().delete()
 
 	def test_retrieve_likes_success_status_code(self):
-		response = self.client.get(self.url)
+		response = self.client.get(self.url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 	
 	def test_retrieve_likes_success_data(self):
-		response = self.client.get(self.url)
+		response = self.client.get(self.url, {}, **self.header)
 		self.assertEqual(response.json(), [{ 'id': self.like.pk }])
 
 	def test_retrieve_likes_fails_status_code(self):
-		response = self.client.get(self.incorrect_url)
+		response = self.client.get(self.incorrect_url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

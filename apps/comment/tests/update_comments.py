@@ -6,6 +6,8 @@ from apps.post.models import Post
 from apps.user.models import Profile
 
 class UpdateCommentsTestCase(APITestCase):
+	header = None
+	profile_id = None
 	url = ''
 	data = None
 	incorrect_url = ''
@@ -15,6 +17,20 @@ class UpdateCommentsTestCase(APITestCase):
 
 	def setUp(self) -> None:
 		''' set up variables to be used in tests '''
+		registering_data = {
+			'username': 'doey', 
+			'email': 'doey@do.com', 
+			'first_name': 'doey', 
+			'last_name': 'doey',
+			'password': 'secret'
+		}
+		# register user
+		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		# authenticate user and get authorization toke
+		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
+		# set up header
+		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
+
 		self.profile = Profile.objects.create(
 			bio="cool guy", 
 			user=User.objects.create(
@@ -48,7 +64,7 @@ class UpdateCommentsTestCase(APITestCase):
 		''' 
 		test if updating a comment with correct data returns a status code of 202 
 		'''
-		response = self.client.put(self.url, self.data)
+		response = self.client.put(self.url, self.data, **self.header)
 	
 		self.assertEquals(response.status_code, status.HTTP_202_ACCEPTED)
 	
@@ -56,18 +72,18 @@ class UpdateCommentsTestCase(APITestCase):
 		''' 
 		test if updating a comment that does not exists returns a status code of 404 
 		'''
-		response = self.client.put(self.incorrect_url, self.data)
+		response = self.client.put(self.incorrect_url, self.data, **self.header)
 	
 		self.assertEquals(response.status_code, status.HTTP_404_NOT_FOUND)
 
 	def test_updating_comment_post_fails(self):
 		''' test if updating a comment post fails with a status code of 400 '''
-		response = self.client.put(self.url, dict(self.data, **{ 'post': 10 }))
+		response = self.client.put(self.url, dict(self.data, **{ 'post': 10 }), **self.header)
 		self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_updating_comment_profile_fails(self):
 		''' test if updating a comment profile fails with a status code of 400 '''
-		response = self.client.put(self.url, dict(self.data, **{ 'profile': 10 }))
+		response = self.client.put(self.url, dict(self.data, **{ 'profile': 10 }), **self.header)
 		self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_updating_comment_message_fails(self):
@@ -75,7 +91,7 @@ class UpdateCommentsTestCase(APITestCase):
 		test if updating a comment message to an empty string fails with a status 
 		code of 400 
 		'''
-		response = self.client.put(self.url, {'message': ''})
+		response = self.client.put(self.url, {'message': ''}, **self.header)
 		self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_updating_comment_without_message_fails(self):
@@ -83,6 +99,6 @@ class UpdateCommentsTestCase(APITestCase):
 		test if updating a comment message to an empty string fails with a status 
 		code of 400 
 		'''
-		response = self.client.put(self.url, {})
+		response = self.client.put(self.url, {}, **self.header)
 		self.assertEquals(response.status_code, status.HTTP_400_BAD_REQUEST)
 
