@@ -27,18 +27,14 @@ class AuthViewSet(viewsets.ViewSet):
         
         '''
         request_data = request.data
-        key_list = list(request_data.keys())
 
-        if ('username' not in key_list or 'password' not in key_list):
+        if ('username' not in request_data or 'password' not in request_data):
             return Response(
                 {'error': 'username and password are required'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        username = request_data['username']
-        password = request_data['password']
-
-        user = authenticate(username=username, password=password)
+        user = authenticate(username=request_data['username'], password=request_data['password'])
 
         if not user:
             return Response(

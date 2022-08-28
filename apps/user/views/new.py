@@ -20,17 +20,10 @@ class NewProfileViewSet(viewsets.ViewSet):
 		''' allows new users to register '''
 		request_data = request.data
 
-		required = [
-			'username',
-			'email',
-			'first_name',
-			'last_name',
-			'password'
-		]
+		required = ['username','email','first_name','last_name','password']
 
-		key_list = list(request_data.keys())
 		for required_key in required:
-			if required_key not in key_list:
+			if required_key not in request_data:
 				return Response(
 					{'error': 'username, email, first_name, last_name and password are required'}, 
 					status=status.HTTP_400_BAD_REQUEST
@@ -56,28 +49,17 @@ class NewProfileViewSet(viewsets.ViewSet):
 			# save user to db
 			user.save()
 
-			if 'avatar' in request_data and 'bio' in request_data:
-				# create a profile for the user
-				profile = Profile(
-					user=user,
-					bio=request_data['bio'],
-					avatar=request_data['avatar']
-				)
-			
-				# save profile to db
-				profile.save()
+			# create a profile for the user
+			profile = Profile(
+				user=user,
+				bio=request_data['bio'] if 'bio' in request_data else None,
+				avatar=request_data['avatar'] if 'avatar' in request_data else None
+			)
+
+			# save profile to db
+			profile.save()
+			if 'avatar' in request_data:
 				make_avatar.delay(profile.pk)
-			elif 'avatar' not in request_data and 'bio' in request_data:
-				profile = Profile(
-					user=user,
-					bio=request_data['bio'],
-				)
-				profile.save()
-			else :
-				profile = Profile(
-					user=user
-				)
-				profile.save()
 
 			# return 201 response as user and profile were successfully created
 			return Response(
