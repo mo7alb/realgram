@@ -11,6 +11,7 @@ from apps.comment.serializers import CommentSerializer
 class CommentViewSet(
 	mixins.CreateModelMixin,
 	mixins.RetrieveModelMixin,
+	mixins.UpdateModelMixin,
 	viewsets.GenericViewSet
 ):
 	''' 
@@ -21,7 +22,7 @@ class CommentViewSet(
 	# to be changed in the future from AllowAny to IsAuthenticated
 	permission_classes = [AllowAny]
 
-	def create(self, request):
+	def create(self, request) -> Response:
 		''' create a new comment '''
 		request_data = request.data
 		if (
@@ -55,7 +56,7 @@ class CommentViewSet(
 				status=status.HTTP_500_INTERNAL_SERVER_ERROR
 			)
 	
-	def retrieve(self, request, pk=None):
+	def retrieve(self, request, pk=None) -> Response:
 		''' 
 		retrieve list of comments related to a post 
 		
@@ -63,8 +64,30 @@ class CommentViewSet(
 		'''
 		post = get_object_or_404(Post.objects.all(), pk=pk)
 		comments = get_list_or_404(Comment.objects.all(), post=post.pk)
+
+		serializer = CommentSerializer(comments, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def update(self, request, pk=None) -> Response:
+		request_data = request.data
+		if 'message' not in request_data or request_data['message'] == '':
+			return Response(
+				{ 'details': 'message is required' }, 
+				status=status.HTTP_400_BAD_REQUEST
+			)
+		elif 'profile' in request_data or 'post' in request_data:
+			return Response(
+				{ 'details': 'profile and post cannot be updated' }, 
+				status=status.HTTP_400_BAD_REQUEST
+			)
+		
+		comment = get_object_or_404(self.queryset, pk=pk)
 		try:
-			serializer = CommentSerializer(comments, many=True)
-			return Response(serializer.data, status=status.HTTP_200_OK)
+			comment.message = request_data['message']
+			comment.save()
+			return Response(
+				{ 'details': 'Successfully updated comment message' },
+				status=status.HTTP_202_ACCEPTED
+			)
 		except:
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
