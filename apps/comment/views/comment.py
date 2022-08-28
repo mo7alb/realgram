@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import viewsets, mixins
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,6 +10,7 @@ from apps.comment.serializers import CommentSerializer
 
 class CommentViewSet(
 	mixins.CreateModelMixin,
+	mixins.RetrieveModelMixin,
 	viewsets.GenericViewSet
 ):
 	''' 
@@ -53,3 +54,17 @@ class CommentViewSet(
 				{ 'details': 'An error just occurred' },
 				status=status.HTTP_500_INTERNAL_SERVER_ERROR
 			)
+	
+	def retrieve(self, request, pk=None):
+		''' 
+		retrieve list of comments related to a post 
+		
+		the primary key passed is used as the primary key of the post
+		'''
+		post = get_object_or_404(Post.objects.all(), pk=pk)
+		comments = get_list_or_404(Comment.objects.all(), post=post.pk)
+		try:
+			serializer = CommentSerializer(comments, many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		except:
+			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
