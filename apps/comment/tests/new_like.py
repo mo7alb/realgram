@@ -12,7 +12,7 @@ class NewCommentLikeTestCase(APITestCase):
 	post = None
 	comment = None
 	data = None
-	
+
 	def setUp(self) -> None:
 		self.profile = Profile.objects.create(
 			bio='cool guy',
@@ -41,6 +41,12 @@ class NewCommentLikeTestCase(APITestCase):
 		''' test if creating a like with correct data returns a status code of 201 '''
 		res = self.client.post(self.url, self.data)
 		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+	
+	def test_create_new_like_multiple_times(self):
+		''' test if creating a like multiple times returns a status code of 400 '''
+		res = self.client.post(self.url, self.data)
+		res_second = self.client.post(self.url, self.data)
+		self.assertEqual(res_second.status_code, status.HTTP_400_BAD_REQUEST)
 	
 	def test_create_new_like_without_comment(self):
 		''' test if creating a like without a comment returns a status code of 400 '''

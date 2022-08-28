@@ -26,3 +26,8 @@ class LikeCommentSerializer(serializers.ModelSerializer):
 			'profile'
 		]
 	
+class LikeSerializer(serializers.ModelSerializer):
+	class Meta: 
+		model = LikeComment
+		fields = ['id']
+	

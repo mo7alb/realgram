@@ -5,3 +5,4 @@ from .delete_comment import *
 
 from .new_like import *
 from .delete_like import *
+from .retrieve_likes import *
