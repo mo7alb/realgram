@@ -1,3 +1,4 @@
+from email.errors import StartBoundaryNotFoundDefect
 from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework import viewsets, mixins
 from rest_framework import status
@@ -12,6 +13,7 @@ class CommentViewSet(
 	mixins.CreateModelMixin,
 	mixins.RetrieveModelMixin,
 	mixins.UpdateModelMixin,
+	mixins.DestroyModelMixin,
 	viewsets.GenericViewSet
 ):
 	''' 
@@ -87,6 +89,18 @@ class CommentViewSet(
 			comment.save()
 			return Response(
 				{ 'details': 'Successfully updated comment message' },
+				status=status.HTTP_202_ACCEPTED
+			)
+		except:
+			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+	def destroy(self, request, pk=None) -> Response:
+		comment = get_object_or_404(self.queryset, pk=pk)
+
+		try:
+			comment.delete()
+			return Response(
+				{ 'details': '' }, 
 				status=status.HTTP_202_ACCEPTED
 			)
 		except:
