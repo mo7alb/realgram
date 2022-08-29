@@ -46,6 +46,12 @@ class PostRetrievalTestCase(APITestCase):
 		response = self.client.get(self.url, {}, **self.header)
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+	def test_retrieval_route_status_code_unauthorized(self):
+		''' check if route returns 401 status code when accessed by unauthorized user '''
+		response = self.client.get(self.url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 	
 	def test_retrieval_route_status_code_incorrect_url(self):
 		''' check if retrieve route returns 404 status code on incorrect url '''

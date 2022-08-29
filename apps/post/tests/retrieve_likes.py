@@ -64,6 +64,11 @@ class RetrieveLikeTestCase(APITestCase):
 		response = self.client.get(self.url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+	def test_like_retrieve_sucess_code(self):
+		''' test if retrieve route returns a status code of 401 for unauthorized users '''
+		response = self.client.get(self.url)
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 	def test_like_retrieve_sucess_data(self):
 		''' test if retrieve route returns a status code of 200 '''
 		response = self.client.get(self.url, {}, **self.header).json()

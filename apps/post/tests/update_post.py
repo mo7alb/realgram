@@ -55,9 +55,14 @@ class PostUpdateTestCase(APITestCase):
 		User.objects.all().delete()
 
 	def test_update_returns_correct_status(self) -> None:
-		''' test if update returns correct status code '''
+		''' test if update returns status code 202 on successfull update  '''
 		response = self.client.put(self.url, self.data, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+	def test_update_unauthorized_fails(self) -> None:
+		''' test if update returns status code 401 when accessed by unauthorized user '''
+		response = self.client.put(self.url, self.data)
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 	def test_update_returns_correct_data(self) -> None:
 		''' test if updated post has correct data '''

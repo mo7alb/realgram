@@ -57,3 +57,9 @@ class DeleteLikeTestCase(APITestCase):
 		''' test if delete route returns a status code of 404 on incorrect post pk passed '''
 		response = self.client.delete(self.incorrect_url, {}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+	def test_unauthorized_delete_like_fails(self):
+		''' test if unauthorized user tries deleting a like fails with a status code of 401  '''
+		response = self.client.delete(self.url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

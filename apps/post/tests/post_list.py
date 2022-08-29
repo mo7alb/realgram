@@ -39,6 +39,12 @@ class PostListTestCase(APITestCase):
 
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+	def test_list_route_unauthorized_fails(self):
+		''' check if the posts list route returns a status code of 401 for unauthorized users '''
+		response = self.client.get(self.url)
+
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 	def test_list_route_returns_correct_title(self):
 		''' check if the posts list route returns correct data by checking the returned title '''
 		response = self.client.get(self.url, {}, **self.header)

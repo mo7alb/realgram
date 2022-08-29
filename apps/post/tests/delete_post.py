@@ -53,3 +53,8 @@ class DeletePostTestCase(APITestCase):
 		response_retrieving = self.client.get(self.url, {}, **self.header)
 
 		self.assertEqual(response_retrieving.status_code, status.HTTP_404_NOT_FOUND)
+
+	def test_unauthorized_post_delete_fails(self) -> None:
+		''' test if deleting an exisiting post while being unauthorized returns a status of 401 '''
+		response = self.client.delete(self.url)
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

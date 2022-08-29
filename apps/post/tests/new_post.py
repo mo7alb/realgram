@@ -46,13 +46,19 @@ class NewPostTestCase(APITestCase):
 		Profile.objects.all().delete()
 		User.objects.all().delete()
 
-	def test_new_post_status_code_correct_data(self):
+	def test_new_post_status_code_correct(self):
 		''' test if creating a new post returns a status code of 201 '''
 		response = self.client.post(self.url, self.data, **self.header)
 		
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+	def test_new_post_unauthorized_status_code_correct(self):
+		''' test if unauthorized user tries creating a new post returns a status code of 401 '''
+		response = self.client.post(self.url, self.data)
+		
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 	
-	def test_new_post_status_code_incorrect_data(self):
+	def test_new_post_status_code_incorrect(self):
 		''' test if creating a new post returns a status code of 201 '''
 		response = self.client.post(self.url, self.data_without_title, **self.header)
 		
