@@ -6,11 +6,8 @@ from rest_framework.test import APITestCase
 
 class PostRetrievalTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	incorrect_url = ''
-	user = None
-	profile = None
 	post = None
 
 	def setUp(self) -> None:
@@ -23,24 +20,16 @@ class PostRetrievalTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.user = User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com",
-			)
-		self.profile = Profile.objects.create(
-			bio="cool guy", 
-			user=self.user
-		)
+		profile = Profile.objects.get(pk=profile_id)
+
 		self.post = Post.objects.create(
-			profile=self.profile,
+			profile=profile,
 			title="welcome to my website"
 		)
 		self.url = '/api/posts/{}/'.format(self.post.pk)

@@ -9,7 +9,6 @@ class NewPostTestCase(APITestCase):
 	header = None
 	url = ''
 	data = None
-	profile_id = None
 	data_without_title = None
 	data_incorrect_profile_id = None
 
@@ -23,7 +22,7 @@ class NewPostTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
@@ -31,11 +30,11 @@ class NewPostTestCase(APITestCase):
 
 		self.url = '/api/posts/'		
 		self.data = {
-			'profile': self.profile_id,
+			'profile': profile_id,
 			'title': 'this is a post',
 			'caption': 'Check this cool post'
 		}
-		self.data_without_title = { 'profile': self.profile_id, 'caption': 'this is a cool post' }
+		self.data_without_title = { 'profile': profile_id, 'caption': 'this is a cool post' }
 		self.data_incorrect_profile_id = {
 			'title': 'Check out this lemur', 
 			'caption': 'this is a cool post',

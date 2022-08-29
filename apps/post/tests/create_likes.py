@@ -6,7 +6,6 @@ from rest_framework.test import APITestCase
 
 class CreateLikeTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	profile = None
 	post = None
@@ -21,21 +20,13 @@ class CreateLikeTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.profile = Profile.objects.create(
-			bio="some guy",
-			user=User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com"
-			)
-		)
+		self.profile = Profile.objects.get(pk=profile_id)
 
 		self.post = Post.objects.create(
 			profile=self.profile,

@@ -6,13 +6,9 @@ from rest_framework.test import APITestCase
 
 class DeleteLikeTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	incorrect_url = ''
-	profile = None
-	post = None
-	like = None
-
+	
 	def setUp(self) -> None:
 		''' set up variables for tests to use them '''
 		registering_data = {
@@ -23,34 +19,25 @@ class DeleteLikeTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-
 		# first user
-		self.profile = Profile.objects.create(
-			bio="cool guy", 
-			user=User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com"
-			)
-		)
+		profile = Profile.objects.get(pk=profile_id)
 		
 		# post
-		self.post = Post.objects.create(profile=self.profile, title="welcome to my website")
+		post = Post.objects.create(profile=profile, title="welcome to my website")
 		
 		# first like
-		self.like = LikePost.objects.create(profile=self.profile, post=self.post)
+		like = LikePost.objects.create(profile=profile, post=post)
 
 		# url to delete like
-		self.url = '/api/like-post/{}/'.format(self.like.pk)
+		self.url = '/api/like-post/{}/'.format(like.pk)
 		# set up incorrect url
-		self.incorrect_url = '/api/like-post/{}/'.format(self.like.pk + 10)
+		self.incorrect_url = '/api/like-post/{}/'.format(like.pk + 10)
 
 	def tearDown(self) -> None:
 		''' clean the db once the tests are over'''

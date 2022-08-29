@@ -6,13 +6,7 @@ from rest_framework.test import APITestCase
 
 class PostUpdateTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
-	user = None
-	second_user = None
-	profile = None
-	second_profile = None
-	post = None
 	data = None
 	data_with_profile = None
 
@@ -26,45 +20,32 @@ class PostUpdateTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-
-		self.user = User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com",
-			)
-		self.profile = Profile.objects.create(
-			bio="cool guy", 
-			user=self.user
-		)
-		self.second_user = User.objects.create(
+		profile = Profile.objects.get(pk=profile_id)
+		second_profile = Profile.objects.create(
+			bio="super cool guy", user=User.objects.create(
 				username="johndoe2",
 				first_name="john",
 				last_name="doe",
 				email="johndoe2@somemail.com",
 			)
-		self.second_profile = Profile.objects.create(
-			bio="super cool guy", 
-			user=self.second_user
 		)
-		self.post = Post.objects.create(
-			profile=self.profile,
-			title="welcome to my website"
-		)
-		self.url = '/api/posts/{}/'.format(self.post.pk)
-		self.incorrect_url = '/api/posts/{}/'.format(self.post.pk + 100)
+		post = Post.objects.create(profile=profile,title="welcome to my website")
+
+		self.url = '/api/posts/{}/'.format(post.pk)
+		self.incorrect_url = '/api/posts/{}/'.format(post.pk + 100)
+
 		self.data = {
 			'body': 'Would like to take a moment and thank you'
 		}
 		self.data_with_profile = {
 			'body': 'Would like to take a moment and thank you',
-			'profile': self.second_profile
+			'profile': second_profile
 		}
 
 	def tearDown(self) -> None:

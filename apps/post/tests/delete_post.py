@@ -6,12 +6,8 @@ from rest_framework.test import APITestCase
 
 class DeletePostTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	incorrect_url = ''
-	user = None
-	profile = None
-	post = None
 
 	def setUp(self) -> None:
 		''' set up variables for tests to use them '''
@@ -23,27 +19,16 @@ class DeletePostTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.user = User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com",
-			)
-		self.profile = Profile.objects.create(
-			bio="cool guy", 
-			user=self.user
-		)
-		self.post = Post.objects.create(
-			profile=self.profile,
-			title="welcome to my website"
-		)
-		self.url = '/api/posts/{}/'.format(self.post.pk)
+		profile = Profile.objects.get(pk=profile_id)
+		
+		post = Post.objects.create(profile=profile,title="welcome to my website")
+		self.url = '/api/posts/{}/'.format(post.pk)
 		self.incorrect_url = '/api/posts/100000/'
 		
 	def tearDown(self) -> None:

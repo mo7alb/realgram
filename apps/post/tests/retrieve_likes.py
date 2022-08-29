@@ -6,13 +6,10 @@ from rest_framework.test import APITestCase
 
 class RetrieveLikeTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	incorrect_url = ''
-	first_profile = None
-	second_profile = None
-	post = None
-	Like = None
+	first_like = None
+	second_like = None
 
 	def setUp(self) -> None:
 		''' set up variables for tests to use them '''
@@ -24,29 +21,17 @@ class RetrieveLikeTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-
 		# first user
-		self.first_profile = Profile.objects.create(
-			bio="cool guy", 
-			user=User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com"
-			)
-		)
-		
-		# second user
-
-		self.second_profile = Profile.objects.create(
-			bio="cool guy", 
-			user=User.objects.create(
+		first_profile = Profile.objects.get(pk=profile_id)
+		# second profile
+		second_profile = Profile.objects.create(
+			bio="cool guy", user=User.objects.create(
 				username="johndoe2",
 				first_name="john",
 				last_name="johndoe",
@@ -55,17 +40,17 @@ class RetrieveLikeTestCase(APITestCase):
 		)
 		
 		# post
-		self.post = Post.objects.create(profile=self.first_profile, title="welcome to my website")
+		post = Post.objects.create(profile=first_profile, title="welcome to my website")
 		
 		# first like
-		self.first_like = LikePost.objects.create(profile=self.first_profile, post=self.post)
+		self.first_like = LikePost.objects.create(profile=first_profile, post=post)
 		# second like
-		self.second_like = LikePost.objects.create(profile=self.second_profile, post=self.post)
+		self.second_like = LikePost.objects.create(profile=second_profile, post=post)
 		
 		# url to retrieve likes
-		self.url = '/api/like-post/{}/'.format(self.post.pk)
+		self.url = '/api/like-post/{}/'.format(post.pk)
 		# incorrect url to retrieve likes from 
-		self.incorrect_url = '/api/like-post/{}/'.format(self.post.pk + 10)
+		self.incorrect_url = '/api/like-post/{}/'.format(post.pk + 10)
 		
 	def tearDown(self) -> None:
 		''' clean the db once the tests are over'''

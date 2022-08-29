@@ -8,10 +8,7 @@ class PostListTestCase(APITestCase):
 	header = None
 	profile_id = None
 	url = ''
-	user = None
-	profile = None
-	post = None
-
+	
 	def setUp(self) -> None:
 		registering_data = {
 			'username': 'doey', 
@@ -28,20 +25,8 @@ class PostListTestCase(APITestCase):
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
 		self.url = '/api/posts/'
-		self.user = User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com",
-			)
-		self.profile = Profile.objects.create(
-			bio="cool guy", 
-			user=self.user
-		)
-		self.post = Post.objects.create(
-			profile=self.profile,
-			title="welcome to my website"
-		)
+		profile = Profile.objects.get(pk=self.profile_id)
+		self.post = Post.objects.create(profile=profile,title="welcome to my website")
 
 	def tearDown(self) -> None:
 		Post.objects.all().delete()
@@ -66,4 +51,4 @@ class PostListTestCase(APITestCase):
 		response = self.client.get(self.url, {}, **self.header)
 		data = response.json()[0]['profile']
 
-		self.assertEqual(data, { 'id': self.profile.id, 'user': { 'username': self.user.username}})
+		self.assertEqual(data['id'], self.profile_id)
