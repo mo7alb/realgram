@@ -7,15 +7,9 @@ from apps.user.models import Profile
 
 class RetrieveCommentsTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	incorrect_url = ''
-	profile = None
-	post = None
-	post_with_no_comments = None
-	first_comment = None
-	second_comment = None
-	third_comment = None
+	post_with_no_comments_url = None
 
 	def setUp(self) -> None:
 		''' set up variables to be used in tests '''
@@ -27,48 +21,30 @@ class RetrieveCommentsTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.profile = Profile.objects.create(
-			bio="cool guy", 
-			user=User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com",
-			)
-		)
-		self.post = Post.objects.create(
-			profile=self.profile,
+		profile = Profile.objects.get(pk=profile_id)
+		post = Post.objects.create(
+			profile=profile,
 			title="welcome to my website"
 		)
-		self.post_with_no_comments = Post.objects.create(
-			profile=self.profile,
+		post_with_no_comments = Post.objects.create(
+			profile=profile,
 			title="welcome to my website"
 		)
-		self.first_comment = Comment.objects.create(
-			message='Thanks for the welcoming',
-			post=self.post,
-			profile=self.profile
-		)
-		self.second_comment = Comment.objects.create(
-			message='anytime',
-			post=self.post,
-			profile=self.profile
-		)
-		self.third_comment = Comment.objects.create(
-			message='testing comment section',
-			post=self.post,
-			profile=self.profile
-		)
+		Comment.objects.bulk_create([
+			Comment(message='Thanks for the welcoming', post=post, profile=profile ),
+			Comment(message='anytime',post=post,profile=profile),
+			Comment(message='random test',post=post,profile=profile),
+		], 3, True)
 
-		self.url = '/api/comments/{}/'.format(self.post.pk) 
+		self.url = '/api/comments/{}/'.format(post.pk) 
 		self.post_with_no_comments_url = '/api/comments/{}/'.format(
-			self.post_with_no_comments.pk
+			post_with_no_comments.pk
 		) 
 		self.incorrect_post_url = '/api/comments/300/'
 	

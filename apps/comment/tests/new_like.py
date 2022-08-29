@@ -8,11 +8,7 @@ from apps.comment.models import Comment, LikeComment
 
 class NewCommentLikeTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
-	profile = None
-	post = None
-	comment = None
 	data = None
 
 	def setUp(self) -> None:
@@ -24,26 +20,18 @@ class NewCommentLikeTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.profile = Profile.objects.create(
-			bio='cool guy',
-			user=User.objects.create(
-				username='doey2',
-				email='doey@somedomain.com',
-				first_name='doey',
-				last_name='johnson'
-			)
-		)
+		profile = Profile.objects.get(pk=profile_id)
 
-		self.post = Post.objects.create(profile=self.profile, title='Some post')
-		self.comment = Comment.objects.create(post=self.post, profile=self.profile, message='Some message')
+		post = Post.objects.create(profile=profile, title='Some post')
+		comment = Comment.objects.create(post=post, profile=profile, message='Some message')
 
-		self.data = {'comment':self.comment.pk, 'profile':self.profile.id}
+		self.data = {'comment':comment.pk, 'profile':profile.id}
 		self.url = '/api/like-comment/'
 
 	def tearDown(self) -> None:

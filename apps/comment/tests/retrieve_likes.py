@@ -8,14 +8,10 @@ from apps.comment.models import Comment, LikeComment
 
 class RetrieveCommentLikesTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	incorrect_url = ''
-	profile = None
-	comment = None
-	comment_without_likes = None
 	like = None
-	
+
 	def setUp(self) -> None:
 		registering_data = {
 			'username': 'doey', 
@@ -25,40 +21,30 @@ class RetrieveCommentLikesTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.profile = Profile.objects.create(
-			bio='cool guy',
-			user=User.objects.create(
-				username='doey2',
-				email='doey2@somedomain.com',
-				first_name='doey',
-				last_name='johnson'
-			)
-		)
+		profile = Profile.objects.get(pk=profile_id)
 		
-		self.comment = Comment.objects.create(
-			profile=self.profile, 
-			post=Post.objects.create(profile=self.profile, title='Some post'), 
-			message='Some message'
+		post = Post.objects.create(profile=profile, title='Some post')
+		Comment.objects.bulk_create(
+			[
+				Comment(profile=profile, post=post, message='Some message'),
+				Comment(profile=profile, post=post, message='Some other message')
+			],
+			batch_size=2,ignore_conflicts=True
 		)
-		self.comment_without_likes = Comment.objects.create(
-			profile=self.profile, 
-			post=Post.objects.create(profile=self.profile, title='Some post'), 
-			message='Some other message'
-		)
-		
+		comment = Comment.objects.get(message='Some message')
 		self.like = LikeComment.objects.create(
-			comment=self.comment,
-			profile=self.profile
+			comment=comment,
+			profile=profile
 		)
 
-		self.url = '/api/like-comment/{}/'.format(self.comment.pk)
-		self.incorrect_url = '/api/like-comment/{}/'.format(self.comment.pk + 100)
+		self.url = '/api/like-comment/{}/'.format(comment.pk)
+		self.incorrect_url = '/api/like-comment/{}/'.format(comment.pk + 100)
 
 	def tearDown(self) -> None:
 		LikeComment.objects.all().delete()

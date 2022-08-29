@@ -7,13 +7,9 @@ from apps.user.models import Profile
 
 class UpdateCommentsTestCase(APITestCase):
 	header = None
-	profile_id = None
 	url = ''
 	data = None
-	incorrect_url = ''
-	profile = None 
-	post = None 
-	comment = None 
+	incorrect_url = '' 
 
 	def setUp(self) -> None:
 		''' set up variables to be used in tests '''
@@ -25,33 +21,26 @@ class UpdateCommentsTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.profile = Profile.objects.create(
-			bio="cool guy", 
-			user=User.objects.create(
-				username="johndoe",
-				first_name="john",
-				last_name="johndoe",
-				email="johndoe@somemail.com",
-			)
-		)
-		self.post = Post.objects.create(
-			profile=self.profile,
+		profile = Profile.objects.get(pk=profile_id)
+
+		post = Post.objects.create(
+			profile=profile,
 			title="welcome to my website"
 		)
-		self.comment = Comment.objects.create(
+		comment = Comment.objects.create(
 			message='Thanks for the welcoming',
-			post=self.post,
-			profile=self.profile
+			post=post,
+			profile=profile
 		)
 		self.data = { 'message': 'the message has changed'}
-		self.url = '/api/comments/{}/'.format(self.comment.pk)
-		self.incorrect_url = '/api/comments/{}/'.format(self.comment.pk + 100)
+		self.url = '/api/comments/{}/'.format(comment.pk)
+		self.incorrect_url = '/api/comments/{}/'.format(comment.pk + 100)
 
 	def tearDown(self) -> None:
 		''' clear db once all tests are completed '''
