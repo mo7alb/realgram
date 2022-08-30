@@ -9,7 +9,7 @@ class ProfileRetreivalViewSet(viewsets.ViewSet):
 	queryset = Profile.objects.all()
 
 	def retrieve(self, request, pk=None):
-		profile = get_object_or_404(self.queryset, pk=pk)
+		profile = get_object_or_404(self.queryset, id=pk)
 		serializer = ProfileSerializer(profile)
 
 		return Response(serializer.data, status=status.HTTP_200_OK)

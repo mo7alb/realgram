@@ -23,6 +23,7 @@ urlpatterns = [
     path('', include('apps.user.urls')),
     path('', include('apps.post.urls')),
     path('', include('apps.comment.urls')),
+    path('', include('apps.followers.urls')),
 ] + static(
     settings.MEDIA_URL_AVATAR,
     document_root=settings.MEDIA_ROOT_AVATAR
