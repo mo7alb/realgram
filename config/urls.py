@@ -20,6 +20,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('apps.frontend.urls')),
     path('', include('apps.user.urls')),
     path('', include('apps.post.urls')),
     path('', include('apps.comment.urls')),
@@ -27,4 +28,7 @@ urlpatterns = [
 ] + static(
     settings.MEDIA_URL_AVATAR,
     document_root=settings.MEDIA_ROOT_AVATAR
+) + static(
+    settings.MEDIA_URL_POST_IMG,
+    document_root=settings.MEDIA_ROOT_POST_IMG
 )

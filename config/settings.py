@@ -27,11 +27,12 @@ SECRET_KEY = '!9^)kx&+m4e8)yu4l9d_0@42uh-&&u(kjs)2^$_9jqvctw5)w7'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1:8000', 'localhost']
 
 
 # Application definition
 INSTALLED_APPS = [
+    'bootstrap5',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'apps.post.apps.PostConfig',
     'apps.comment.apps.CommentConfig',
     'apps.followers.apps.FollowersConfig',
+    'apps.frontend.apps.FrontendConfig',
 ]
 
 MIDDLEWARE = [
@@ -62,7 +64,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            # os.path.join(BASE_DIR, 'apps/templates')
+            os.path.join(BASE_DIR, 'templates/')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -141,3 +143,6 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT_AVATAR = 'avatars'
 MEDIA_URL_AVATAR = '/avatars/'
+
+MEDIA_ROOT_POST_IMG = 'posts'
+MEDIA_URL_POST_IMG = '/posts/'

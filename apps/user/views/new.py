@@ -1,7 +1,9 @@
+import json
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework import status
 from apps.user.models import Profile
+from apps.user.serializers import ProfileSerializer
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -20,10 +22,19 @@ class NewProfileViewSet(viewsets.ViewSet):
 		''' allows new users to register '''
 		request_data = request.data
 
+		print("request body ===>", request.data)
+
 		required = ['username','email','first_name','last_name','password']
 
+
+		if 'avatar' not in request_data or request_data['avatar'] == {}: 
+			return Response(
+				{'error': 'avatar is not passed in '}, 
+				status=status.HTTP_400_BAD_REQUEST
+			)
+
 		for required_key in required:
-			if required_key not in request_data:
+			if required_key not in request_data or request_data[required_key] == "":
 				return Response(
 					{'error': 'username, email, first_name, last_name and password are required'}, 
 					status=status.HTTP_400_BAD_REQUEST
@@ -58,20 +69,11 @@ class NewProfileViewSet(viewsets.ViewSet):
 
 			# save profile to db
 			profile.save()
-			if 'avatar' in request_data:
+			if 'avatar' in request_data and request_data['avatar'] != {}:
 				make_avatar.delay(profile.pk)
 
 			# return 201 response as user and profile were successfully created
-			return Response(
-				{ 
-					'profile': {
-						'id': profile.pk, 
-						'username': user.username,
-						'email': user.email,
-					}
-				}, status=status.HTTP_201_CREATED
-			)
+			return Response(status=status.HTTP_201_CREATED)
 
 		except:
 			return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
