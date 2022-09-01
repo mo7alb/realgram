@@ -22,16 +22,7 @@ class NewProfileViewSet(viewsets.ViewSet):
 		''' allows new users to register '''
 		request_data = request.data
 
-		print("request body ===>", request.data)
-
 		required = ['username','email','first_name','last_name','password']
-
-
-		if 'avatar' not in request_data or request_data['avatar'] == {}: 
-			return Response(
-				{'error': 'avatar is not passed in '}, 
-				status=status.HTTP_400_BAD_REQUEST
-			)
 
 		for required_key in required:
 			if required_key not in request_data or request_data[required_key] == "":

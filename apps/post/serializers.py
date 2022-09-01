@@ -49,14 +49,6 @@ class PostSerializer(serializers.ModelSerializer):
 		model = Post
 		fields = '__all__'
 
-	def create(self, validated_data) -> Post:
-		post = Post(
-			**validated_data, 
-			created_at=None,
-			updated_at=None
-		)
-		return post
-
 class LikePostSerializer(serializers.ModelSerializer):
 	profile = ProfileSerializer()
 	post = PostSerializer()

@@ -45,15 +45,14 @@ class PostViewSet(
 
 	def create(self, request) -> Response:
 		''' Allow clients to create a new post '''
-		data = {key: request.data[key] for key in list(request.data.keys())}
+		data = request.data
+		print(data)
+		if data["title"] == "":
+			return Response({'detail': 'Title is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-		if not 'title' in data or not 'profile' in data:
-			return Response({'detail': 'Values missing, title and profile are required'}, status=status.HTTP_400_BAD_REQUEST)
+		profile = get_object_or_404(Profile.objects.all(), user=request.user)
 
-		profile = get_object_or_404(Profile.objects.all(), pk=data['profile'])
 		try:
-			data['profile'] = profile
-		
 			new_post = Post(
 				title=data['title'],
 				profile=profile,
@@ -68,7 +67,7 @@ class PostViewSet(
 			if 'img' in data:
 				make_post_img(new_post.pk)
 
-			return Response({'pk': new_post.pk,'title': new_post.title}, status=status.HTTP_201_CREATED)
+			return Response(status=status.HTTP_201_CREATED)
 		except:
 			return Response({ 'details': 'Some error occured' }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
