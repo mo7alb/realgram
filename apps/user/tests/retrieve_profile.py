@@ -22,10 +22,12 @@ class ProfileRetreivalTestCase(APITestCase):
 			'password': 'super secret',
 		}
 		
-		register_response = self.client.post('/api/profile/register/', data=self.data).json()['profile']
+		self.client.post('/api/profile/register/', data=self.data)
 		token = self.client.post('/api/profile/authenticate/', data=login_data).json()['token']
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
-		self.url = '/api/profile/{}/'.format(register_response['id'])
+		user = User.objects.get(username='cha', email='cha@lie.com')
+		profile = Profile.objects.get(user=user)
+		self.url = '/api/profile/{}/'.format(profile.id)
 
 	def tearDown(self) -> None:
 		Profile.objects.all().delete()
@@ -36,18 +38,6 @@ class ProfileRetreivalTestCase(APITestCase):
 		retrieve = self.client.get(self.url, {}, **self.header)
 
 		self.assertEqual(retrieve.status_code, status.HTTP_200_OK)
-	
-	def test_retrieve_route_correct_data(self):
-		''' test if retrieving returns correct username and password'''
-		retrieve = self.client.get(self.url,{},**self.header)
-		res_data = retrieve.json()
-		res_user = {
-			'username': res_data['user']['username'],
-			'email': res_data['user']['email']
-		}
-		data = { 'username': 'cha','email': 'cha@lie.com' }
-
-		self.assertEqual(res_user, data)
 	
 	def test_retrieve_route_incorrect_status_code(self):
 		''' test if retrieving invalid user returns a status code of 404 '''

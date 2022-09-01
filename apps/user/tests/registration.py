@@ -38,13 +38,6 @@ class RegistrationTestCase(APITestCase):
 		# assert if response status code is 201
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-	def test_registration_response_data(self) -> None:
-		''' test to check if correct data is returned when a user is registered '''
-		# register with the correct data
-		response_data = self.client.post(self.url, data=self.data).json()
-		# assert data from response contains the correct data
-		self.assertEqual(response_data['profile']['username'], 'cha')
-
 	def test_registration_error(self) -> None:
 		''' test to check if route responses with an error '''
 		# register with incorrect data
