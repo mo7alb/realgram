@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 
 class PostListTestCase(APITestCase):
 	header = None
-	profile_id = None
+	profile = None
 	url = ''
 	
 	def setUp(self) -> None:
@@ -18,15 +18,15 @@ class PostListTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		self.profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		self.client.post('/api/profile/register/', registering_data)
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
 		self.url = '/api/posts/'
-		profile = Profile.objects.get(pk=self.profile_id)
-		self.post = Post.objects.create(profile=profile,title="welcome to my website")
+		self.profile = Profile.objects.get(user=User.objects.get(username='doey', email='doey@do.com'))
+		self.post = Post.objects.create(profile=self.profile,title="welcome to my website")
 
 	def tearDown(self) -> None:
 		Post.objects.all().delete()
@@ -56,5 +56,5 @@ class PostListTestCase(APITestCase):
 		''' check if the posts list route returns correct data by checking the returned title '''
 		response = self.client.get(self.url, {}, **self.header)
 		data = response.json()[0]['profile']
-
-		self.assertEqual(data['id'], self.profile_id)
+		
+		self.assertEqual(data['id'], self.profile.id)

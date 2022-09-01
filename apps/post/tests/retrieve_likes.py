@@ -21,14 +21,13 @@ class RetrieveLikeTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		self.client.post('/api/profile/register/', registering_data)
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
-
-		# first user
-		first_profile = Profile.objects.get(pk=profile_id)
+		# first profile
+		first_profile = Profile.objects.get(user=User.objects.get(username='doey', email='doey@do.com'))
 		# second profile
 		second_profile = Profile.objects.create(
 			bio="cool guy", user=User.objects.create(

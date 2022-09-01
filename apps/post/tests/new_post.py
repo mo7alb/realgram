@@ -22,7 +22,7 @@ class NewPostTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		self.client.post('/api/profile/register/', registering_data)
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
@@ -30,16 +30,10 @@ class NewPostTestCase(APITestCase):
 
 		self.url = '/api/posts/'		
 		self.data = {
-			'profile': profile_id,
 			'title': 'this is a post',
 			'caption': 'Check this cool post'
 		}
-		self.data_without_title = { 'profile': profile_id, 'caption': 'this is a cool post' }
-		self.data_incorrect_profile_id = {
-			'title': 'Check out this lemur', 
-			'caption': 'this is a cool post',
-			'profile': 1000
-		}
+		self.data_without_title = { 'caption': 'this is a cool post' }
 	
 	def tearDown(self) -> None:
 		Post.objects.all().delete()
@@ -59,19 +53,7 @@ class NewPostTestCase(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 	
 	def test_new_post_status_code_incorrect(self):
-		''' test if creating a new post returns a status code of 201 '''
+		''' test if creating a new post returns a status code of 400 if title is not passed '''
 		response = self.client.post(self.url, self.data_without_title, **self.header)
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-	
-	def test_new_post_status_code_incorrect_profile(self):
-		''' test if creating a new post returns a status code of 201 '''
-		response = self.client.post(self.url, self.data_incorrect_profile_id, **self.header)
-		
-		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-	def test_new_post_data_returned_correct_data(self):
-		''' test if creating a new post returns a status code of 201 '''
-		response = self.client.post(self.url, self.data, **self.header)
-		data = response.json()
-		self.assertEqual(data['title'], self.data['title'])

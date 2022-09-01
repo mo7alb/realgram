@@ -23,13 +23,13 @@ class CreateLikeTestCase(APITestCase):
 			'password': 'secret'
 		}
 		# register user
-		profile_id = self.client.post('/api/profile/register/', registering_data).json()['profile']['id']
+		self.client.post('/api/profile/register/', registering_data)
 		# authenticate user and get authorization toke
 		token = self.client.post('/api/profile/authenticate/', {'username': 'doey','password': 'secret'}).json()['token']
 		# set up header
 		self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token)}
 
-		self.profile = Profile.objects.get(pk=profile_id)
+		self.profile = profile = Profile.objects.get(user=User.objects.get(username='doey', email='doey@do.com'))
 
 		self.post = Post.objects.create(
 			profile=self.profile,
