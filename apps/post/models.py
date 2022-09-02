@@ -20,13 +20,3 @@ class Post(models.Model):
 
 	def __str__(self) -> str:
 		return "{}".format(self.title)
-
-class LikePost(models.Model):
-	# liking requires a user profile
-	profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-	# liking requires a post
-	post = models.ForeignKey(Post, on_delete=models.CASCADE)
-
-	def __str__(self) -> str:
-		return "{} liked {}".format(self.profile, self.post)
-	

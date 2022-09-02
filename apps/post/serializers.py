@@ -4,7 +4,7 @@ from typing import Sequence
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from apps.post.models import LikePost, Post
+from apps.post.models import Post
 from apps.user.models import Profile
 
 
@@ -48,17 +48,3 @@ class PostSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Post
 		fields = '__all__'
-
-class LikePostSerializer(serializers.ModelSerializer):
-	profile = ProfileSerializer()
-	post = PostSerializer()
-	
-	class Meta:
-		model = LikePost
-		fields = ['id', 'profile', 'post']
-
-class LikeSerializer(serializers.ModelSerializer):
-
-	class Meta:
-		model = LikePost
-		fields = ['id']

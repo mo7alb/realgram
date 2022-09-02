@@ -17,7 +17,3 @@ class Comment(models.Model):
 
 	def __str__(self) -> str:
 		return self.message
-
-class LikeComment(models.Model):
-	profile = models.ForeignKey(Profile,on_delete=models.CASCADE)
-	comment = models.ForeignKey(Comment,on_delete=models.CASCADE)

@@ -1,6 +1,6 @@
 from typing import Sequence
 from django.contrib import admin
-from apps.post.models import Post, LikePost
+from apps.post.models import Post
 from apps.user.models import Profile
 class ProfileInline(admin.TabularInline):
 	model = Profile
@@ -18,4 +18,3 @@ class PostAdmin(admin.ModelAdmin):
 		model = Post
 
 admin.site.register(Post, PostAdmin)
-admin.site.register(LikePost)
