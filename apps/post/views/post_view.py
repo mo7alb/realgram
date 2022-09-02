@@ -22,7 +22,7 @@ class PostViewSet(
 	Viewset to create, retrieve, update, delete and to get a list of posts 
 	'''
 	queryset = Post.objects.all()
-	serializer_class = PostListSerializer
+	serializer_class = PostSerializer
 	permission_classes = [IsAuthenticated]
 
 	def list(self, request) -> Response:
@@ -32,15 +32,6 @@ class PostViewSet(
 		# serialize the posts list
 		serializer: PostListSerializer = PostListSerializer(posts, many=True)
 		# respond to the client with the list
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
-	def retrieve(self, request, pk=None) -> Response:
-		''' Send a single post to the client '''
-		# use shortcut method to find post or to return with a 404 error
-		post = get_object_or_404(Post.objects.all(), pk=pk)
-		# serialize the post data
-		serializer = PostSerializer(post)
-		# send the serialized data to the client
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request) -> Response:
@@ -64,7 +55,7 @@ class PostViewSet(
 			)
 			new_post.save()
 			
-			if 'img' in data:
+			if new_post.img != None:
 				make_post_img(new_post.pk)
 
 			return Response(status=status.HTTP_201_CREATED)

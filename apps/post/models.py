@@ -4,7 +4,7 @@ from apps.user.models import Profile
 
 class Post(models.Model):
 	# title for the post
-	title = models.CharField(max_length=100)
+	title = models.CharField(max_length=100, null=False, blank=False)
 	# post caption
 	caption = models.CharField(max_length=300, blank=True, null=True)
 	# content of the post

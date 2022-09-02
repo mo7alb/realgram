@@ -64,12 +64,6 @@ class PostUpdateTestCase(APITestCase):
 		response = self.client.put(self.url, self.data)
 		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-	def test_update_returns_correct_data(self) -> None:
-		''' test if updated post has correct data '''
-		response = self.client.put(self.url, self.data, **self.header)
-		data = self.client.get(self.url, {}, **self.header).json()
-		self.assertEqual(data['body'], self.data['body'])
-
 	def test_changing_post_profile_fails(self) -> None:
 		''' 
 		test if trying to update the profile in a post fails with 400 status code 

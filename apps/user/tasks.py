@@ -3,11 +3,14 @@ from celery import shared_task
 from apps.user.models import Profile
 from PIL import Image as img
 import io
+import os
 
 @ shared_task
 def make_avatar(id):
 	''' scale the size of the avatar and upload it '''
 	profile = Profile.objects.get(id=id)
+
+	previous_avatar = profile.avatar.path
 	
 	image = img.open(profile.avatar)
 	x_factor = image.size[0] / 260
@@ -22,3 +25,6 @@ def make_avatar(id):
 
 	profile.avatar = file
 	profile.save()
+
+	if os.path.exists(previous_avatar):
+		os.remove(previous_avatar)

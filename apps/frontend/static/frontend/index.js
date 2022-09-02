@@ -48,12 +48,25 @@ function createNavbar() {
 
    let navUnorderedList = document.createElement("ul");
    navUnorderedList.classList.add("navbar-nav", "ms-auto", "mb-2", "mb-lg-0");
-   navUnorderedList.appendChild(navItem("Home"));
+   navUnorderedList.appendChild(
+      navItem("Home", function () {
+         changePageContent(Home());
+      })
+   );
 
    let token = getCookie("token");
    if (token == undefined) {
-      navUnorderedList.appendChild(navItem("Register"));
-      navUnorderedList.appendChild(navItem("Login"));
+      navUnorderedList.appendChild(
+         navItem("Register", function () {
+            changePageContent(registerPage());
+         })
+      );
+      navUnorderedList.appendChild(
+         navItem("Login", function () {
+            console.log("login clicked");
+            changePageContent(Home());
+         })
+      );
    } else {
       navUnorderedList.appendChild(
          navItem("Logout", function () {
@@ -88,7 +101,7 @@ function createNavbar() {
 function Home() {
    let token = getCookie("token");
    if (token != undefined) {
-      return posts();
+      return postsList();
    }
 
    let containerDiv = document.createElement("div");

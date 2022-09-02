@@ -111,77 +111,68 @@ function changePageContent(content) {
 function login(event) {
    event.preventDefault();
 
-   const form = new FormData(event.target);
-   const formData = Object.fromEntries(form);
+   const formData = new FormData(event.target);
+   formData.append("username", event.target[0].value);
+   formData.append("password", event.target[1].value);
 
-   fetch("/api/profile/authenticate/", {
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-      body: JSON.stringify(formData),
-   })
-      .then(async function (response) {
-         if (response.status !== 200) {
-            let errorRes = await response.json();
-            document.querySelector(
-               "#error"
-            ).textContent = `An error occurred - ${
-               errorRes.error != undefined ? errorRes.error : ""
-            }`;
-            return;
-         }
-         return response.json();
-      })
-      .then(function (responseData) {
-         if (responseData) {
-            console.log(responseData.token);
-            document.cookie = `token=${responseData.token}`;
-            console.log(document.cookie);
-            refreshNavBar();
-            changePageContent(posts());
-         }
-      });
+   makeRequest("/api/profile/authenticate/", null, "POST", formData).then(
+      function (data) {
+         document.cookie += `token=${data.token};`;
+         refreshNavBar();
+         changePageContent(postsList());
+      }
+   );
 }
 
 function register(event) {
    event.preventDefault();
    const formData = new FormData();
 
-   formData.append("username", event.target[0].value);
-   formData.append("email", event.target[1].value);
-   formData.append("first_name", event.target[2].value);
-   formData.append("last_name", event.target[3].value);
-   formData.append("password", event.target[4].value);
-   formData.append("avatar", event.target[5].files[0]);
+   event.target[0].value && formData.append("username", event.target[0].value);
+   event.target[1].value && formData.append("email", event.target[1].value);
+   event.target[2].value &&
+      formData.append("first_name", event.target[2].value);
+   event.target[3].value && formData.append("last_name", event.target[3].value);
+   event.target[4].value && formData.append("password", event.target[4].value);
+   event.target[5].files[0] &&
+      formData.append("avatar", event.target[5].files[0]);
 
-   fetch("/api/profile/register/", {
-      method: "POST",
-      body: formData,
-   })
-      .then(function (response) {
-         return response.json();
-      })
-      .then(function (responseData) {
-         document.querySelector("#error").textContent = `An error occurred - ${
-            responseData.error != undefined ? errorRes.error : ""
-         }`;
-
+   makeRequest("/api/profile/register/", null, "POST", formData)
+      .then(function (data) {
          changePageContent(Home());
       })
       .catch(function (error) {
-         console.error(error);
+         console.log(error);
+         document.querySelector(
+            "#error"
+         ).textContent = `An error occurred - ${error.message}`;
       });
 }
 
 async function makeRequest(url, header = null, method = "GET", data = null) {
-   let response = await fetch(url, {
-      headers: header,
-      method,
-      body: data,
-   });
+   let response =
+      header == null
+         ? await fetch(url, {
+              method,
+              body: data,
+           })
+         : await fetch(url, {
+              headers: header,
+              method,
+              body: data,
+           });
    if (response.status == 201) {
       return response.statusText;
    } else if (response.status < 200 || response.status > 204) {
-      throw new Error(`A ${response.status} error occured`);
+      let message;
+      try {
+         let errorData = await response.json();
+         message = errorData.error;
+      } catch (error) {
+         message = `A ${response.status} error occured`;
+      }
+
+      throw new Error(message);
    } else {
       return await response.json();
    }

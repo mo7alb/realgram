@@ -1,4 +1,4 @@
-function posts() {
+function postsList() {
    let container = document.createElement("div");
    container.classList.add(
       "container-fluid",
@@ -35,24 +35,39 @@ function posts() {
    postListContainer.id = "post-list-container";
    container.appendChild(postListContainer);
 
-   makeRequest(url, header).then(function (data) {
-      for (let i = 0; i < data.length; i++) {
-         let post = data[i];
+   makeRequest(url, header)
+      .then(function (data) {
+         for (let i = 0; i < data.length; i++) {
+            let postData = data[i];
 
-         createPost(post);
-      }
-   });
+            post(postData);
+         }
+      })
+      .catch(function (error) {
+         console.error(error);
+      });
 
    return container;
 }
 
-function createPost(post) {
-   let title = document.createElement("h5");
-   title.textContent = post.title;
+/**
+ * A function to get a single post and add a div with the post title and
+ * caption to the DOM
+ * @param {Object} postData Post details
+ */
+function post(postData) {
+   let title = document.createElement("button");
+   title.classList.add("btn", "btn-link", "ps-0");
+   title.textContent = postData.title;
+   title.setAttribute("data-pk", postData.pk);
+
+   title.onclick = function () {
+      changePageContent(postDetails(title.dataset.pk));
+   };
 
    let caption = document.createElement("p");
    caption.classList.add("my-1", "text-muted");
-   caption.textContent = post.caption;
+   caption.textContent = postData.caption;
 
    let container = document.createElement("div");
    container.classList.add(
@@ -70,10 +85,14 @@ function createPost(post) {
    document.querySelector("#post-list-container").appendChild(container);
 }
 
+/**
+ * Creates a form for adding a new post and addes it to the DOM
+ * @returns object representing a HTML div element
+ */
 function createPostForm() {
    let form = document.createElement("form");
    form.enctype = "multipart/form-data";
-   form.onsubmit = post;
+   form.onsubmit = createPost;
 
    form.appendChild(formInput("title", "title"));
    form.appendChild(formInput("caption", "Caption"));
@@ -124,7 +143,7 @@ function createPostForm() {
  * Function used to make a post request to the api to create a new post
  * @param {event} event Event passed to the function when form submits
  */
-function post(event) {
+function createPost(event) {
    event.preventDefault();
 
    let formData = new FormData();
@@ -142,9 +161,60 @@ function post(event) {
 
    makeRequest(url, header, "POST", formData)
       .then(function (data) {
-         changePageContent(posts());
+         console.log(data);
+         // changePageContent(posts());
       })
       .catch(function (error) {
+         console.error(error);
          document.querySelector("#error-container").textContent = error;
       });
+}
+
+function postDetails(pk) {
+   let url = `/api/posts/${pk}/`;
+   let header = { Authorization: `token ${getCookie("token")}` };
+
+   makeRequest(url, header, "GET")
+      .then(data => {
+         let postContainer = document.createElement("div");
+         postContainer.classList.add("shadow", "rounded", "bg-body", "py-5");
+
+         let postTitle = document.createElement("h5");
+         postTitle.textContent = data.title;
+
+         postContainer.appendChild(postTitle);
+
+         if ("caption" in data && data["caption"] != null) {
+            let postCaption = document.createElement("p");
+            postCaption.classList.add("text-muted");
+            postCaption.textContent = data.caption;
+            postContainer.appendChild(postCaption);
+         }
+
+         if ("img" in data && data["img"] != null) {
+            let postImage = document.createElement("img");
+            postImage.src = data.img;
+            postContainer.appendChild(postImage);
+         }
+
+         if ("body" in data && data["body"] != null) {
+            let postBody = document.createElement("p");
+            postBody.textContent = data.body;
+            postContainer.appendChild(postBody);
+         }
+         container.appendChild(postContainer);
+      })
+      .catch(function (error) {
+         console.error(error);
+      });
+
+   let container = document.createElement("div");
+   container.classList.add("text-center");
+
+   let title = document.createElement("h3");
+   title.classList.add("my-3");
+   title.textContent = "Post details";
+   container.appendChild(title);
+
+   return container;
 }
