@@ -177,12 +177,19 @@ function postDetails(pk) {
    makeRequest(url, header, "GET")
       .then(data => {
          let postContainer = document.createElement("div");
-         postContainer.classList.add("shadow", "rounded", "bg-body", "py-5");
+         postContainer.classList.add(
+            "shadow",
+            "rounded",
+            "bg-body",
+            "py-5",
+            "col-10"
+         );
 
-         let postTitle = document.createElement("h5");
+         let postTitle = document.createElement("h3");
          postTitle.textContent = data.title;
 
          postContainer.appendChild(postTitle);
+         postContainer.appendChild(postProfile(data.profile.id));
 
          if ("caption" in data && data["caption"] != null) {
             let postCaption = document.createElement("p");
@@ -209,12 +216,61 @@ function postDetails(pk) {
       });
 
    let container = document.createElement("div");
-   container.classList.add("text-center");
+   container.classList.add(
+      "text-center",
+      "d-flex",
+      "justify-content-center",
+      "align-items-center",
+      "flex-column"
+   );
 
    let title = document.createElement("h3");
    title.classList.add("my-3");
    title.textContent = "Post details";
    container.appendChild(title);
 
+   return container;
+}
+
+/**
+ * Fetchs the profile details and returns a DOM element containing the user avatar and the user
+ * @param {int} pk The primary key or id of the profile
+ * @returns HTML div element
+ */
+function postProfile(pk) {
+   let container = document.createElement("div");
+   container.classList.add("d-flex", "justify-content-center", "flex-column");
+
+   makeRequest(`/api/profile/${pk}`, {
+      Authorization: `token ${getCookie("token")}`,
+   })
+      .then(function (data) {
+         if (data.avatar != null) {
+            let avatar = document.createElement("img");
+            avatar.style.width = "120px";
+            avatar.style.height = "120px";
+            avatar.src = data.avatar;
+            container.appendChild(avatar);
+         } else {
+            let avatar = document.createElement("div");
+            avatar.classList.add("rounded-circle", "bg-dark", "mx-auto");
+            avatar.style.width = "120px";
+            avatar.style.height = "120px";
+            container.appendChild(avatar);
+         }
+
+         let username = document.createElement("button");
+         username.textContent = data.user.username;
+         username.classList.add("my-3", "btn", "btn-link");
+
+         username.onclick = function () {
+            changePageContent(profileDetails(data.id));
+         };
+
+         container.appendChild(username);
+      })
+      .catch(function (error) {
+         console.error(error);
+      });
    return container;
 }
