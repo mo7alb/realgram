@@ -46,7 +46,7 @@ class PostViewSet(
 	def create(self, request) -> Response:
 		''' Allow clients to create a new post '''
 		data = request.data
-		# print(data)
+		
 		if 'title' not in data:
 			return Response({'detail': 'Title is required'}, status=status.HTTP_400_BAD_REQUEST)
 

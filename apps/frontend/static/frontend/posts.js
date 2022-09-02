@@ -20,6 +20,21 @@ function posts() {
       Authorization: `token ${getCookie("token")}`,
    };
 
+   container.appendChild(title);
+   container.appendChild(createPostForm());
+
+   let postListContainer = document.createElement("div");
+   postListContainer.classList.add(
+      "col-10",
+      "shadow",
+      "my-5",
+      "pb-5",
+      "bg-body",
+      "rounded"
+   );
+   postListContainer.id = "post-list-container";
+   container.appendChild(postListContainer);
+
    makeRequest(url, header).then(function (data) {
       for (let i = 0; i < data.length; i++) {
          let post = data[i];
@@ -28,14 +43,10 @@ function posts() {
       }
    });
 
-   container.appendChild(title);
-   container.appendChild(createPostForm());
-
    return container;
 }
 
 function createPost(post) {
-   console.log(post);
    let title = document.createElement("h5");
    title.textContent = post.title;
 
@@ -56,7 +67,7 @@ function createPost(post) {
    container.appendChild(title);
    container.appendChild(caption);
 
-   console.log(document.querySelector("#root").firstChild);
+   document.querySelector("#post-list-container").appendChild(container);
 }
 
 function createPostForm() {
@@ -89,8 +100,7 @@ function createPostForm() {
       "justify-content-center",
       "flex-column",
       "shadow",
-      "my-5",
-      "pb-5",
+      "mt-5",
       "bg-body",
       "rounded",
       "text-start"
@@ -126,19 +136,15 @@ function post(event) {
    event.target[3].files[0] != undefined &&
       formData.append("img", event.target[3].files[0]);
 
-   let token = getCookie("token");
+   let tokenStr = `token ${getCookie("token")}`;
+   let header = { Authorization: tokenStr };
+   let url = "/api/posts/";
 
-   fetch("/api/posts/", {
-      headers: {
-         Authorization: `token ${token}`,
-      },
-      method: "POST",
-      body: formData,
-   })
-      .then(function (response) {
-         return response.json();
+   makeRequest(url, header, "POST", formData)
+      .then(function (data) {
+         changePageContent(posts());
       })
-      .then(function (responseData) {
-         console.log(responseData);
+      .catch(function (error) {
+         document.querySelector("#error-container").textContent = error;
       });
 }

@@ -174,10 +174,15 @@ function register(event) {
 
 async function makeRequest(url, header = null, method = "GET", data = null) {
    let response = await fetch(url, {
-      headers: header == null ? {} : header,
+      headers: header,
       method,
       body: data,
    });
-
-   return await response.json();
+   if (response.status == 201) {
+      return response.statusText;
+   } else if (response.status < 200 || response.status > 204) {
+      throw new Error(`A ${response.status} error occured`);
+   } else {
+      return await response.json();
+   }
 }
