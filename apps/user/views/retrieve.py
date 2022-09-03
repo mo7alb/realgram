@@ -12,13 +12,14 @@ class ProfileRetreivalViewSet(
 ):
 	''' viewset to retrieve a user profile '''
 	queryset = Profile.objects.all()
+	serializer_class = ProfileSerializer
 
 	def retrieve(self, request, pk=None):
 		''' retrieve profile data '''
 		requestUser = get_object_or_404(self.queryset, user=request.user)
 
 		profile: Profile = get_object_or_404(self.queryset, id=pk)
-		serializer = ProfileSerializer(profile)
+		serializer = self.serializer_class(profile)
 
 		same_profile: bool = requestUser == profile
 
@@ -27,7 +28,6 @@ class ProfileRetreivalViewSet(
 	def update(self, request, pk=None):
 		''' update profile data '''
 		request_data = request.data
-		print(request_data)
 		profile = get_object_or_404(self.queryset, id=pk)
 
 		# check if both bio and avatar are not sent throught the request

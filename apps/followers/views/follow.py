@@ -14,6 +14,7 @@ class FollowViewset(
 ):
 	''' Viewset to create, retrieve a list of and to destroy follows '''
 	queryset = Follow.objects.all()
+	serializer_class = FollowListSerializer
 	
 	def create(self, request):
 		''' create a new follow '''
@@ -50,6 +51,6 @@ class FollowViewset(
 		profile = get_object_or_404(Profile.objects.all(), id=pk)
 
 		follow_list = self.queryset.filter(profile=profile)
-		serializer = FollowListSerializer(follow_list, many=True)
+		serializer = self.serializer_class(follow_list, many=True)
 
 		return Response(serializer.data, status=status.HTTP_200_OK)

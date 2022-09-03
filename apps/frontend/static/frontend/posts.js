@@ -1,3 +1,6 @@
+/**
+ * Display list of posts
+ */
 function postsList() {
    let container = document.createElement("div");
    container.classList.add(
@@ -152,17 +155,20 @@ function createPost(event) {
          "Title is required";
       return;
    }
-   formData.append("title", event.target[0].value);
-   formData.append("caption", event.target[1].value);
-   formData.append("body", event.target[2].value);
-   formData.append("img", event.target[3].files[0]);
+   event.target[0].value != "" &&
+      formData.append("title", event.target[0].value);
+   event.target[1].value != "" &&
+      formData.append("caption", event.target[1].value);
+   event.target[2].value != "" &&
+      formData.append("body", event.target[2].value);
+   event.target[3].files[0] != undefined &&
+      formData.append("img", event.target[3].files[0]);
 
    let header = getHeader();
    let url = "/api/posts/";
 
    makeRequest(url, header, "POST", formData)
       .then(function (data) {
-         console.log(data);
          changePageContent(postsList());
       })
       .catch(function (error) {
@@ -171,6 +177,9 @@ function createPost(event) {
       });
 }
 
+/**
+ * Display a single post's details
+ */
 function postDetails(pk) {
    let url = `/api/posts/${pk}/`;
    let header = getHeader();
@@ -192,7 +201,7 @@ function postDetails(pk) {
             document.querySelector("#post-container").appendChild(postCaption);
          }
 
-         if ("img" in data && data["img"] != null) {
+         if ("img" in data && data["img"] != undefined) {
             let postImage = document.createElement("img");
             postImage.classList.add("w-75");
             postImage.src = data.img;

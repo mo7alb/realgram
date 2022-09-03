@@ -42,7 +42,9 @@ function profileDetails(profileId) {
             buttonContainer.appendChild(
                buttonElement(
                   `Message ${data.user.username}`,
-                  function () {},
+                  function () {
+                     getRoom(profileId);
+                  },
                   "button",
                   "dark",
                   true,
@@ -70,40 +72,6 @@ function profileDetails(profileId) {
             );
             container.appendChild(buttonContainer);
          }
-
-         if (data.same == true) {
-            // form to update profile avatar
-            let form = document.createElement("form");
-            form.onsubmit = function (event) {
-               updateProfile(event, profileId);
-            };
-            form.classList.add("form-inline");
-            form.appendChild(formInput("Bio", "bio"));
-            form.appendChild(
-               formInput("Avatar", "avatar", "file", "image/png, image/jpeg")
-            );
-            form.appendChild(
-               buttonElement(
-                  "Update profile",
-                  null,
-                  "submit",
-                  "secondary",
-                  true,
-                  2,
-                  3
-               )
-            );
-            let formContainer = document.createElement("div");
-            formContainer.classList.add(
-               "col-9",
-               "my-5",
-               "shadow",
-               "rounded",
-               "p-5"
-            );
-            formContainer.appendChild(form);
-            container.appendChild(formContainer);
-         }
       })
       .catch(function (error) {
          console.error(error);
@@ -121,29 +89,4 @@ function profileDetails(profileId) {
    pageTitle.classList.add("text-center", "my-5");
    container.appendChild(pageTitle);
    return container;
-}
-
-function updateProfile(event, profileId) {
-   event.preventDefault();
-
-   let formData = new FormData();
-   event.target[0].value !== "" &&
-      formData.append("bio", event.target[0].value);
-   event.target[1].files[0] != undefined &&
-      formData.append("avatar", event.target[1].files[0]);
-
-   makeRequest(
-      `/api/profile/${profileId}/`,
-      {
-         Authorization: `token ${getCookie("token")}`,
-      },
-      "PUT",
-      formData
-   )
-      .then(function () {
-         changePageContent(profileDetails(profileId));
-      })
-      .catch(function (error) {
-         console.error(error);
-      });
 }

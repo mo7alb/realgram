@@ -3,6 +3,7 @@ from rest_framework import viewsets, mixins
 from rest_framework import status
 from rest_framework.response import Response
 from apps.message.models import Room
+from apps.message.serializers import RoomSerializer
 from apps.user.models import Profile
 
 class CreateRoomViewSet(
@@ -13,6 +14,7 @@ class CreateRoomViewSet(
 	viewset to create a chatting room
 	'''
 	queryset = Room.objects.all()
+	serializer_class = RoomSerializer
 
 	def create(self, request):
 		''' create a new room '''
@@ -30,6 +32,7 @@ class CreateRoomViewSet(
 
 		try: 
 			new_room = Room(
+				slug='{}-{}'.format(first_profile.id, second_profile.id),
 				first_profile=first_profile,
 				second_profile=second_profile
 			)

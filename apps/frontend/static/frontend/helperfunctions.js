@@ -1,3 +1,6 @@
+/**
+ * set page content to home on page load
+ */
 window.onload = function () {
    // get the root element from the html file
    let head = document.querySelector("#head");
@@ -8,6 +11,9 @@ window.onload = function () {
    changePageContent(Home());
 };
 
+/**
+ * function to get a cookie
+ */
 function getCookie(cname) {
    let name = cname + "=";
    let cookies = document.cookie.split(";");
@@ -26,10 +32,16 @@ function getCookie(cname) {
    }
 }
 
+/**
+ * Function to delete a cookie
+ */
 function deleteCookie(name) {
    document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 }
 
+/**
+ * Function that returns commonly used request headers
+ */
 function getHeader() {
    let tokenStr = `token ${getCookie("token")}`;
    return {
@@ -37,6 +49,9 @@ function getHeader() {
    };
 }
 
+/**
+ * Function that creates a dom button element
+ */
 function buttonElement(
    content,
    clickEvent,
@@ -69,6 +84,9 @@ function buttonElement(
    return btn;
 }
 
+/**
+ * funtion that creates a nav bar item
+ */
 function navItem(content, clickEvent) {
    let listItem = document.createElement("li");
    listItem.classList.add("nav-item", "me-4");
@@ -79,6 +97,9 @@ function navItem(content, clickEvent) {
    return listItem;
 }
 
+/**
+ * Function that creates a form input element
+ */
 function formInput(label, htmlFor, type = "text", accepts = null) {
    let inputDiv = document.createElement("div");
    inputDiv.classList.add("mb-3");
@@ -101,6 +122,7 @@ function formInput(label, htmlFor, type = "text", accepts = null) {
    return inputDiv;
 }
 
+/** function that refreshes the navbar upon login and logout  */
 function refreshNavBar() {
    // get the root element from the html file
    let head = document.querySelector("#head");
@@ -109,12 +131,14 @@ function refreshNavBar() {
    head.appendChild(createNavbar());
 }
 
+/** function that changes the content of the page */
 function changePageContent(content) {
    let root = document.querySelector("#root");
    root.innerHTML = "";
    root.appendChild(content);
 }
 
+/** callback function to login users  */
 function login(event) {
    event.preventDefault();
 
@@ -133,17 +157,22 @@ function login(event) {
       });
 }
 
+/** register user */
 function register(event) {
    event.preventDefault();
    const formData = new FormData();
 
-   event.target[0].value && formData.append("username", event.target[0].value);
-   event.target[1].value && formData.append("email", event.target[1].value);
-   event.target[2].value &&
+   event.target[0].value != "" &&
+      formData.append("username", event.target[0].value);
+   event.target[1].value != "" &&
+      formData.append("email", event.target[1].value);
+   event.target[2].value != "" &&
       formData.append("first_name", event.target[2].value);
-   event.target[3].value && formData.append("last_name", event.target[3].value);
-   event.target[4].value && formData.append("password", event.target[4].value);
-   event.target[5].files[0] &&
+   event.target[3].value != "" &&
+      formData.append("last_name", event.target[3].value);
+   event.target[4].value != "" &&
+      formData.append("password", event.target[4].value);
+   event.target[5].files[0] != undefined &&
       formData.append("avatar", event.target[5].files[0]);
 
    makeRequest("/api/profile/register/", null, "POST", formData)
@@ -157,7 +186,7 @@ function register(event) {
          ).textContent = `An error occurred - ${error.message}`;
       });
 }
-
+/** function to make a request to the api */
 async function makeRequest(url, header = null, method = "GET", data = null) {
    let response =
       header == null
@@ -173,6 +202,7 @@ async function makeRequest(url, header = null, method = "GET", data = null) {
    if (response.status == 201) {
       return response.statusText;
    } else if (!response.headers.get("content-type")) {
+      console.log("no json");
       return response;
    } else {
       return await response.json();
