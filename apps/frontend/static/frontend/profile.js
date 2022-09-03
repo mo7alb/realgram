@@ -22,7 +22,7 @@ function profileDetails(profileId) {
          if (data.bio != null) {
             // display profile bio
             let bio = document.createElement("p");
-            bio.textContent = data.bio;
+            bio.textContent = `Bio: ${data.bio}`;
             container.appendChild(bio);
          }
 
@@ -36,7 +36,41 @@ function profileDetails(profileId) {
 
          if (data.same == false) {
             // send messages to user
+            let buttonContainer = document.createElement("div");
+            buttonContainer.classList.add("col-7", "mb-5");
+
+            buttonContainer.appendChild(
+               buttonElement(
+                  `Message ${data.user.username}`,
+                  function () {},
+                  "button",
+                  "dark",
+                  true,
+                  0,
+                  2,
+                  0,
+                  3
+               )
+            );
+            // follow user
+            buttonContainer.appendChild(
+               buttonElement(
+                  `Follow ${data.user.username}`,
+                  function () {
+                     followProfile(profileId);
+                  },
+                  "button",
+                  "dark",
+                  true,
+                  0,
+                  2,
+                  0,
+                  1
+               )
+            );
+            container.appendChild(buttonContainer);
          }
+
          if (data.same == true) {
             // form to update profile avatar
             let form = document.createElement("form");

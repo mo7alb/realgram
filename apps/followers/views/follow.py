@@ -16,6 +16,7 @@ class FollowViewset(
 	queryset = Follow.objects.all()
 	
 	def create(self, request):
+		''' create a new follow '''
 		request_data = request.data
 
 		if 'follow' not in request_data:
