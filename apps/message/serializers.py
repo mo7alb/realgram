@@ -9,9 +9,9 @@ from apps.post.serializers import ProfileSerializer
 
 class MessageSerializer(serializers.ModelSerializer):
 	''' serializer for the message class that abstracts away some message details '''
-	receiver = ProfileSerializer()
+	reciever = ProfileSerializer()
 	sender = ProfileSerializer()
 	
 	class Meta:
 		model = Message
-		fields = ['receiver', 'sender', 'pk', 'message']
+		fields = ['reciever', 'sender', 'pk', 'message']

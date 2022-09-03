@@ -1,5 +1,3 @@
-from datetime import date
-from typing import Sequence
 
 from apps.message.models import Message
 from apps.message.serializers import MessageSerializer
@@ -10,12 +8,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
-class NewMessageViewset(viewsets.GenericViewSet, mixins.CreateModelMixin):
+class NewMessageViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
 	''' viewset for creating a new message '''
 	queryset = Message.objects.all()
 	serializer_class = MessageSerializer
 
-	def create(self, request):
+	def create(self, request) -> Response:
 		''' create a new message '''
 		request_data = request.data
 
