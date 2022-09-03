@@ -30,15 +30,8 @@ class NewCommentsTestCase(APITestCase):
 		
 		self.url = '/api/comments/' 
 		self.profile = Profile.objects.get(user=User.objects.get(username='doey', email= 'doey@do.com'))
-		self.post = Post.objects.create(
-			profile=self.profile,
-			title="welcome to my website"
-		)
-		self.data = {
-			'message': 'Thank you',
-			'post': self.post.pk,
-			'profile': self.profile.id
-		}
+		self.post = Post.objects.create(profile=self.profile,title="welcome to my website")
+		self.data = {'message': 'Thank you','post': self.post.pk}
 	
 	def tearDown(self) -> None:
 		''' clear db once all tests are completed '''
@@ -58,46 +51,18 @@ class NewCommentsTestCase(APITestCase):
 		data = response.json()
 		self.assertEqual(data['message'], self.data['message'])
 	
-	def test_adding_comment_with_missing_profile(self) -> None:
-		''' 
-		test if creating a new comment without profile returns a status code of 400 
-		'''
-		response = self.client.post(
-			self.url, 
-			{
-				'message' : 'this is a good post',
-				'post': self.post.pk
-			}, 
-			**self.header
-		)
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-	
 	def test_adding_comment_with_missing_post(self) -> None:
 		''' 
 		test if creating a new comment without post returns a status code of 400 
 		'''
-		response = self.client.post(
-			self.url, 
-			{
-				'message' : 'this is a good post',
-				'profile': self.profile.id
-			}, 
-			**self.header
-		)
+		response = self.client.post(self.url, {'message' : 'this is a good post',}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_adding_comment_with_missing_message(self) -> None:
 		''' 
 		test if creating a new comment without message returns a status code of 400 
 		'''
-		response = self.client.post(
-			self.url, 
-			{
-				'profile': self.profile.id,
-				'post': self.post.pk
-			}, 
-			**self.header
-		)
+		response = self.client.post(self.url, {'post': self.post.pk}, **self.header)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 	def test_adding_comment_with_incorrect_post(self) -> None:
@@ -108,24 +73,13 @@ class NewCommentsTestCase(APITestCase):
 			self.url, 
 			{
 				'message' : 'this is a good post',
-				'profile': self.profile.id,
 				'post': self.post.pk + 10
 			}, 
 			**self.header
 		)
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-	
-	def test_adding_comment_with_incorrect_profile(self) -> None:
-		''' 
-		test if creating a new comment with incorrect profile returns a status code of 404
-		'''
-		response = self.client.post(
-			self.url, 
-			{
-				'message' : 'this is a good post',
-				'profile': self.profile.id + 120,
-				'post': self.post.pk
-			},
-			**self.header
-		)
-		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+	def test_adding_comment_unauthorized(self) -> None:
+		''' test if creating a new comment while being unauthorized returns a status code of 401 '''
+		response = self.client.post(self.url, self.data)
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

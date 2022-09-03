@@ -147,22 +147,23 @@ function createPost(event) {
    event.preventDefault();
 
    let formData = new FormData();
+   if (event.target[0].value == "") {
+      document.querySelector("#error-container").textContent =
+         "Title is required";
+      return;
+   }
    formData.append("title", event.target[0].value);
-   event.target[1].value != "" &&
-      formData.append("caption", event.target[1].value);
-   event.target[2].value != "" &&
-      formData.append("body", event.target[2].value);
-   event.target[3].files[0] != undefined &&
-      formData.append("img", event.target[3].files[0]);
+   formData.append("caption", event.target[1].value);
+   formData.append("body", event.target[2].value);
+   formData.append("img", event.target[3].files[0]);
 
-   let tokenStr = `token ${getCookie("token")}`;
-   let header = { Authorization: tokenStr };
+   let header = getHeader();
    let url = "/api/posts/";
 
    makeRequest(url, header, "POST", formData)
       .then(function (data) {
          console.log(data);
-         // changePageContent(posts());
+         changePageContent(postsList());
       })
       .catch(function (error) {
          console.error(error);
@@ -172,44 +173,37 @@ function createPost(event) {
 
 function postDetails(pk) {
    let url = `/api/posts/${pk}/`;
-   let header = { Authorization: `token ${getCookie("token")}` };
+   let header = getHeader();
 
    makeRequest(url, header, "GET")
       .then(data => {
-         let postContainer = document.createElement("div");
-         postContainer.classList.add(
-            "shadow",
-            "rounded",
-            "bg-body",
-            "py-5",
-            "col-10"
-         );
-
          let postTitle = document.createElement("h3");
          postTitle.textContent = data.title;
 
-         postContainer.appendChild(postTitle);
-         postContainer.appendChild(postProfile(data.profile.id));
+         document.querySelector("#post-container").appendChild(postTitle);
+         document
+            .querySelector("#post-container")
+            .appendChild(postProfile(data.profile.id));
 
          if ("caption" in data && data["caption"] != null) {
             let postCaption = document.createElement("p");
             postCaption.classList.add("text-muted");
             postCaption.textContent = data.caption;
-            postContainer.appendChild(postCaption);
+            document.querySelector("#post-container").appendChild(postCaption);
          }
 
          if ("img" in data && data["img"] != null) {
             let postImage = document.createElement("img");
+            postImage.classList.add("w-75");
             postImage.src = data.img;
-            postContainer.appendChild(postImage);
+            document.querySelector("#post-container").appendChild(postImage);
          }
 
          if ("body" in data && data["body"] != null) {
             let postBody = document.createElement("p");
             postBody.textContent = data.body;
-            postContainer.appendChild(postBody);
+            document.querySelector("#post-container").appendChild(postBody);
          }
-         container.appendChild(postContainer);
       })
       .catch(function (error) {
          console.error(error);
@@ -229,6 +223,21 @@ function postDetails(pk) {
    title.textContent = "Post details";
    container.appendChild(title);
 
+   let postContainer = document.createElement("div");
+   postContainer.id = "post-container";
+   postContainer.classList.add(
+      "shadow",
+      "rounded",
+      "bg-body",
+      "pt-5",
+      "pb-3",
+      "col-10",
+      "mb-5"
+   );
+   container.appendChild(postContainer);
+
+   container.appendChild(commentForm(pk));
+   container.appendChild(comments(pk));
    return container;
 }
 
@@ -247,6 +256,7 @@ function postProfile(pk) {
       .then(function (data) {
          if (data.avatar != null) {
             let avatar = document.createElement("img");
+            avatar.classList.add("rounded-circle", "mx-auto");
             avatar.style.width = "120px";
             avatar.style.height = "120px";
             avatar.src = data.avatar;

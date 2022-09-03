@@ -27,13 +27,13 @@ class ProfileRetreivalViewSet(
 	def update(self, request, pk=None):
 		''' update profile data '''
 		request_data = request.data
-
+		print(request_data)
 		profile = get_object_or_404(self.queryset, id=pk)
 
 		# check if both bio and avatar are not sent throught the request
 		if 'bio' not in request_data and 'avatar' not in request_data:
 			return Response({ 'error': 'either one of bio or avatar is required to be sent'}, status=status.HTTP_400_BAD_REQUEST)
-
+		
 		try:
 			# update profile 
 			Profile.objects.filter(id=pk).update(

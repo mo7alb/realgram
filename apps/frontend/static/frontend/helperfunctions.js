@@ -30,6 +30,13 @@ function deleteCookie(name) {
    document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 }
 
+function getHeader() {
+   let tokenStr = `token ${getCookie("token")}`;
+   return {
+      Authorization: tokenStr,
+   };
+}
+
 function buttonElement(
    content,
    clickEvent,
@@ -115,13 +122,15 @@ function login(event) {
    formData.append("username", event.target[0].value);
    formData.append("password", event.target[1].value);
 
-   makeRequest("/api/profile/authenticate/", null, "POST", formData).then(
-      function (data) {
-         document.cookie += `token=${data.token};`;
+   makeRequest("/api/profile/authenticate/", null, "POST", formData)
+      .then(function (data) {
+         document.cookie = `token=${data.token};`;
          refreshNavBar();
          changePageContent(postsList());
-      }
-   );
+      })
+      .catch(function (error) {
+         document.querySelector("#error").textContent = error;
+      });
 }
 
 function register(event) {
@@ -163,16 +172,8 @@ async function makeRequest(url, header = null, method = "GET", data = null) {
            });
    if (response.status == 201) {
       return response.statusText;
-   } else if (response.status < 200 || response.status > 204) {
-      let message;
-      try {
-         let errorData = await response.json();
-         message = errorData.error;
-      } catch (error) {
-         message = `A ${response.status} error occured`;
-      }
-
-      throw new Error(message);
+   } else if (!response.headers.get("content-type")) {
+      return response;
    } else {
       return await response.json();
    }

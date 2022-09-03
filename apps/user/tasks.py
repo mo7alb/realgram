@@ -9,22 +9,22 @@ import os
 def make_avatar(id):
 	''' scale the size of the avatar and upload it '''
 	profile = Profile.objects.get(id=id)
-
-	previous_avatar = profile.avatar.path
 	
-	image = img.open(profile.avatar)
-	x_factor = image.size[0] / 260
+	previos_profile_img = profile.img.path
+	profile_image = img.open(profile.img)
 
-	avatar = image.resize((260, int(image.size[1]/x_factor)))
-	file_name = "/avatars/{}_avatar.jpeg".format(str(profile.id))
+	x_factor = profile_image.size[0] / 550
+
+	profile_img = profile_image.resize((550, int(profile_image.size[1]/x_factor)))
+	file_name = "/avatar/{}_avatar.jpeg".format(str(profile.pk))
 
 	byte_array = io.BytesIO()
-	avatar.save(byte_array, format="jpeg")
+	profile_img.save(byte_array, format="jpeg")
 
 	file = SimpleUploadedFile(file_name, byte_array.getvalue())
 
-	profile.avatar = file
+	profile.img = file
 	profile.save()
 
-	if os.path.exists(previous_avatar):
-		os.remove(previous_avatar)
+	if os.path.exists(previos_profile_img):
+		os.remove(previos_profile_img)

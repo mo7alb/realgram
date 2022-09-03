@@ -25,18 +25,14 @@ class CommentViewSet(
 	def create(self, request) -> Response:
 		''' create a new comment '''
 		request_data = request.data
-		if (
-			'message' not in request_data or 
-			'post' not in request_data or 
-			'profile' not in request_data
-		):
+		if ('message' not in request_data or 'post' not in request_data):
 			return Response(
-				{ 'details': 'message, post and profile are required' },
+				{ 'details': 'message, and post are required' },
 				status=status.HTTP_400_BAD_REQUEST
 			)
 		
 		post = get_object_or_404(Post.objects.all(), pk=request_data['post'])
-		profile = get_object_or_404(Profile.objects.all(), id=request_data['profile'])
+		profile = get_object_or_404(Profile.objects.all(), user=request.user)
 
 		try:
 			comment = Comment(
@@ -63,7 +59,7 @@ class CommentViewSet(
 		the primary key passed is used as the primary key of the post
 		'''
 		post = get_object_or_404(Post.objects.all(), pk=pk)
-		comments = get_list_or_404(Comment.objects.all(), post=post.pk)
+		comments = Comment.objects.filter(post=post.pk)
 
 		serializer = CommentSerializer(comments, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)

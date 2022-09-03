@@ -29,6 +29,7 @@ function profileDetails(profileId) {
          if (data.avatar != null) {
             // display profile bio
             let avatar = document.createElement("img");
+            avatar.classList.add("w-50", "mx-auto");
             avatar.src = data.avatar;
             container.appendChild(avatar);
          }
@@ -45,7 +46,7 @@ function profileDetails(profileId) {
             form.classList.add("form-inline");
             form.appendChild(formInput("Bio", "bio"));
             form.appendChild(
-               formInput("Avatar", "avatar", "file", "image/png image/jpeg")
+               formInput("Avatar", "avatar", "file", "image/png, image/jpeg")
             );
             form.appendChild(
                buttonElement(
@@ -94,11 +95,11 @@ function updateProfile(event, profileId) {
    let formData = new FormData();
    event.target[0].value !== "" &&
       formData.append("bio", event.target[0].value);
-   event.target[1].value !== "" &&
-      formData.append("avatar", event.target[1].value);
+   event.target[1].files[0] != undefined &&
+      formData.append("avatar", event.target[1].files[0]);
 
    makeRequest(
-      `/api/profile/${profileId}`,
+      `/api/profile/${profileId}/`,
       {
          Authorization: `token ${getCookie("token")}`,
       },

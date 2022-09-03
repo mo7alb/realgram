@@ -1,5 +1,8 @@
+import profile
 from apps.user.models import Profile
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
@@ -33,6 +36,11 @@ class AuthViewSet(viewsets.ViewSet):
                 {'error': 'username and password are required'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+        user = get_object_or_404(User.objects.all(), username=request_data['username'])
+        profile = get_object_or_404(
+            Profile.objects.all(), 
+            user=user
+        )
 
         user = authenticate(username=request_data['username'], password=request_data['password'])
 
