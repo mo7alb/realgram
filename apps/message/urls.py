@@ -1,12 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from apps.message.views import NewMessageViewset, RetrieveMessageViewset
+from apps.message.views import CreateRoomViewSet, RetrieveRoomViewset
 
 router = DefaultRouter()
 
-router.register(r'', NewMessageViewset, basename='messages')
-router.register(r'', RetrieveMessageViewset, basename='messages')
+router.register(r'room', CreateRoomViewSet)
+router.register(r'room', RetrieveRoomViewset)
 
 urlpatterns = [
-	path('api/messages/', include(router.urls), name='message-routes'),
+	path('api/message/', include(router.urls))
 ]

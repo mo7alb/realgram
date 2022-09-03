@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['127.0.0.1:8000', 'localhost']
 # Application definition
 INSTALLED_APPS = [
     'bootstrap5',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -80,6 +81,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.routing.application'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

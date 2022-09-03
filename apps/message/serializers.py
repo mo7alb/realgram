@@ -3,7 +3,7 @@ from typing import Sequence
 
 from rest_framework import serializers
 
-from apps.message.models import Message
+from apps.message.models import Message, Room
 from apps.user.models import Profile
 from apps.post.serializers import ProfileSerializer
 
@@ -15,3 +15,9 @@ class MessageSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Message
 		fields = ['reciever', 'sender', 'pk', 'message']
+
+class RoomSerializer(serializers.ModelSerializer):
+
+	class Meta:
+		model = Room
+		fields = ['slug']
