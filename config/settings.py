@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.post.apps.PostConfig',
     'apps.comment.apps.CommentConfig',
     'apps.followers.apps.FollowersConfig',
+    'apps.message.apps.MessageConfig',
     'apps.frontend.apps.FrontendConfig',
 ]
 

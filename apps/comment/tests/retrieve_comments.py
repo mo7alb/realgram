@@ -61,13 +61,13 @@ class RetrieveCommentsTestCase(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 	def test_retrieving_comments_return_error_status_code(self) -> None:
-		''' test if creating a new comment returns a status code of 404 '''
+		''' test if retrieving comments from incorrect url returns 404 status code  '''
 		response = self.client.get(self.incorrect_post_url, {}, **self.header)
 		
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 	def test_retrieving_(self) -> None:
-		''' test if creating a new comment returns a status code of 404 '''
-		response = self.client.get(self.post_with_no_comments_url, {}, **self.header)
+		''' test if retrieving comments unauthorized returns 401 status code  '''
+		response = self.client.get(self.url)
 		
-		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
